@@ -1,0 +1,11 @@
+config/rclone/*
+!config/rclone/.gitkeep
+!config/rclone/rclone.conf
+config/senpai/*
+!config/senpai/.gitkeep
+!config/senpai/highlight
+
+# nix
+result
+result-*
+.direnv/

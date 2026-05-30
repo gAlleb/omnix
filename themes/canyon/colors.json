@@ -1,0 +1,29 @@
+{
+    "checksum": "4fd0510cfdb2ee8a6665209c043506c0",
+    "wallpaper": "/home/stefan/.config/wallpaper/Antelope_Canyon.jpeg",
+    "alpha": "100",
+
+    "special": {
+        "background": "#251b10",
+        "foreground": "#c8c6c3",
+        "cursor": "#c8c6c3"
+    },
+    "colors": {
+        "color0": "#251b10",
+        "color1": "#906067",
+        "color2": "#C97A48",
+        "color3": "#F1912B",
+        "color4": "#F9AA64",
+        "color5": "#666E8C",
+        "color6": "#93758B",
+        "color7": "#c8c6c3",
+        "color8": "#746a5f",
+        "color9": "#906067",
+        "color10": "#C97A48",
+        "color11": "#F1912B",
+        "color12": "#F9AA64",
+        "color13": "#666E8C",
+        "color14": "#93758B",
+        "color15": "#c8c6c3"
+    }
+}

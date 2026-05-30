@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Designed to be run by "while true" loop every 30 seconds and alerts if battery is low
+
+BATTERY_THRESHOLD_MIN=20
+BATTERY_THRESHOLD_MAX=80
+BATTERY_THRESHOLD_AUTOSUSPEND=15
+NOTIFICATION_FLAG_DISCHARGING="/run/user/$UID/omnix_battery_notified_discharging"
+NOTIFICATION_FLAG_THRESHOLD="/run/user/$UID/omnix_battery_notified_threshold"
+NOTIFICATION_FLAG_AUTOSUSPEND="/run/user/$UID/omnix_battery_notified_autosuspend"
+BATTERY_LEVEL=$(omnix-battery-remaining)
+BATTERY_STATE=$(upower -i $(upower -e | grep 'BAT') | grep -E "state" | awk '{print $2}')
+
+send_notification_discharging() {
+  notify-send -u critical "󱐋 Time to recharge!" "Battery is down to ${1}%" -i battery-caution -t 30000
+}
+
+send_notification_threshold() {
+  notify-send -u critical "Consider disabling power supply to save battery life!" "Battery is up to ${1}%" -i battery-caution -t 30000
+}
+
+if [[ -n "$BATTERY_LEVEL" && "$BATTERY_LEVEL" =~ ^[0-9]+$ ]]; then
+  if [[ $BATTERY_STATE == "discharging" && $BATTERY_LEVEL -le $BATTERY_THRESHOLD_MIN ]]; then
+    if [[ ! -f $NOTIFICATION_FLAG_DISCHARGING ]]; then
+      send_notification_discharging $BATTERY_LEVEL
+      touch $NOTIFICATION_FLAG_DISCHARGING
+    fi
+  else
+    rm -f $NOTIFICATION_FLAG_DISCHARGING
+  fi
+fi
+
+if [[ -n "$BATTERY_LEVEL" && "$BATTERY_LEVEL" =~ ^[0-9]+$ ]]; then
+  if [[ $BATTERY_STATE == "charging" && $BATTERY_LEVEL -ge $BATTERY_THRESHOLD_MAX ]]; then
+    if [[ ! -f $NOTIFICATION_FLAG_THRESHOLD ]]; then
+      send_notification_threshold $BATTERY_LEVEL
+      touch $NOTIFICATION_FLAG_THRESHOLD
+    fi
+  else
+    rm -f $NOTIFICATION_FLAG_THRESHOLD
+  fi
+fi
+
+if [[ -n "$BATTERY_LEVEL" && "$BATTERY_LEVEL" =~ ^[0-9]+$ ]]; then
+  if [[ $BATTERY_STATE == "discharging" && $BATTERY_LEVEL -le $BATTERY_THRESHOLD_AUTOSUSPEND ]]; then
+    if [[ ! -f $NOTIFICATION_FLAG_AUTOSUSPEND ]]; then
+      touch $NOTIFICATION_FLAG_AUTOSUSPEND
+      loginctl suspend
+    fi
+  else
+    rm -f $NOTIFICATION_FLAG_AUTOSUSPEND
+  fi
+fi
+
+

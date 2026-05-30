@@ -1,0 +1,29 @@
+{
+    "checksum": "7cac33214a9cf01ebe46a1a851869986",
+    "wallpaper": "/home/stefan/.config/wallpaper/some-cool-wallpapers-v0-wkp1biib47da1.webp",
+    "alpha": "100",
+
+    "special": {
+        "background": "#0c0d1b",
+        "foreground": "#c2c2c6",
+        "cursor": "#c2c2c6"
+    },
+    "colors": {
+        "color0": "#0c0d1b",
+        "color1": "#B35547",
+        "color2": "#C48B70",
+        "color3": "#316997",
+        "color4": "#58748C",
+        "color5": "#6F8B99",
+        "color6": "#9E9F9A",
+        "color7": "#c2c2c6",
+        "color8": "#5b5b6f",
+        "color9": "#B35547",
+        "color10": "#C48B70",
+        "color11": "#316997",
+        "color12": "#58748C",
+        "color13": "#6F8B99",
+        "color14": "#9E9F9A",
+        "color15": "#c2c2c6"
+    }
+}

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+browser=$(xdg-settings get default-web-browser)
+
+case $browser in
+google-chrome* | brave-browser* | microsoft-edge* | opera* | vivaldi*) ;;
+*) 
+        if [[ -f ~/.local/share/applications/brave-browser.desktop ]] || \
+           [[ -f ~/.nix-profile/share/applications/brave-browser.desktop ]] || \
+           [[ -f /usr/share/applications/brave-browser.desktop ]]; then
+            browser="brave-browser.desktop"
+        else
+            browser="chromium.desktop"
+        fi
+        ;;
+esac
+
+if [[ $browser = "chromium.desktop" ]]; then
+  exec setsid env GOOGLE_API_KEY="yes" GOOGLE_DEFAULT_CLIENT_ID="77185425430.apps.googleusercontent.com" GOOGLE_DEFAULT_CLIENT_SECRET="OTJgUOQcT7lO7GsGZq2G4IlT" $(sed -n 's/^Exec=\([^ ]*\).*/\1/p' {~/.local,~/.nix-profile,/usr}/share/applications/$browser 2>/dev/null | head -1) --app="$1" "${@:2}"
+else
+  exec setsid $(sed -n 's/^Exec=\([^ ]*\).*/\1/p' {~/.local,~/.nix-profile,/usr}/share/applications/$browser 2>/dev/null | head -1) --app="$1" "${@:2}"
+fi

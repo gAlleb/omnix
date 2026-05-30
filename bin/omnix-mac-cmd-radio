@@ -1,0 +1,87 @@
+#!/opt/local/bin/bash
+
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+
+set -euo pipefail
+
+RADIOVOLUME="100"
+
+MPV_BIN="/usr/local/bin/mpv" 
+
+declare -A radio_stations
+radio_stations=(
+    ["omFM Main Stream"]="https://stream.omfm.ru:8443/stream"
+    ["Rock @ omFM"]="https://stream.omfm.ru:8443/rock"
+    ["Coma @ omFM"]="https://stream.omfm.ru:8443/coma"
+    ["Core @ omFM"]="https://stream.omfm.ru:8443/core"
+    ["Terra @ omFM"]="https://stream.omfm.ru:8443/terra"
+    ["Chill @ omFM"]="https://stream.omfm.ru:8443/chill"
+    ["Cafe De Paris @ omFM"]="https://stream.omfm.ru:8443/cdp"
+    ["Total Rock"]="https://s3.citrus3.com:8056/stream"
+)
+
+# --- FUNCTIONS ---
+
+notify() {
+    osascript -e "display notification \"$2\" with title \"$1\" sound name \"default\""
+}
+
+show_menu() {
+    # 1. Get all Keys (Station Names) and sort them
+    mapfile -t sorted_names < <(printf "%s\n" "${!radio_stations[@]}" | sort)
+
+    # 2. Build the AppleScript list string: "Name 1", "Name 2", "Name 3"
+    local list_items="\"Quit\"" # Always add Quit first
+    for name in "${sorted_names[@]}"; do
+        list_items="$list_items, \"$name\""
+    done
+
+    # 3. Open the Dialog
+    osascript -e "tell application \"System Events\"
+        activate
+        set myList to {$list_items}
+        choose from list myList with prompt \"Select Station:\" with title \"Radio Streamer\"
+    end tell"
+}
+
+main() {
+    # Check if MPV exists before starting
+    if [ ! -x "$MPV_BIN" ]; then
+        notify "Error" "Cannot find mpv at $MPV_BIN"
+        exit 1
+    fi
+
+    choice=$(show_menu)
+
+    if [ "$choice" = "false" ] || [ -z "$choice" ]; then
+        exit 0
+    fi
+
+    case $choice in
+    "Quit")
+        notify "Stopping radio" "Goodbye! 🎶"
+        pkill -f "mpv --volume"
+        exit
+        ;;
+    *)
+        # Look up the URL directly from the array using the name
+        url="${radio_stations[$choice]}"
+
+        if [ -n "$url" ]; then
+            pkill -f "mpv --volume" || true
+            notify "Starting radio" "Playing: $choice 🎶"
+            
+            # Run MPV silently
+            exec "$MPV_BIN" \
+                --volume="${RADIOVOLUME:-100}" \
+                --no-video \
+                --no-terminal \
+                "$url" > /dev/null 2>&1
+        else
+            notify "Error" "Could not find URL for station."
+        fi
+        ;;
+    esac
+}
+
+main

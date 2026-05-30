@@ -1,0 +1,15 @@
+[font.offset]
+x = 0
+y = 0
+
+[font]
+size = 14.5
+
+# Normal font style
+normal = { family = "JetBrainsMono Nerd Font", style = "Regular" } 
+# Bold font style
+bold = { family = "JetBrainsMono Nerd Font", style = "Bold" } 
+# Italic font style
+italic = { family = "JetBrainsMono Nerd Font", style = "Italic" }  
+# Bold Italic font style
+bold_italic = { family = "JetBrainsMono Nerd Font", style = "Bold Italic" } 

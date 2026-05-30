@@ -1,0 +1,94 @@
+#!/bin/bash
+
+font_name="$1"
+
+if [[ -n "$font_name" && "$font_name" != "CNCLD" ]]; then
+  if fc-list | grep -iq "$font_name"; then
+    if [[ -f ~/.config/alacritty/alacritty.toml ]]; then
+      sed -i "s/family = \".*\"/family = \"$font_name\"/g" ~/.config/alacritty/font.toml
+    fi
+
+    if [[ -f ~/.config/kitty/kitty.conf ]]; then
+      sed -i "s/^font_family .*/font_family $font_name/g" ~/.config/kitty/kitty.conf
+      pkill -USR1 kitty
+    fi
+
+    if [[ -f ~/.config/ghostty/config ]]; then
+      sed -i "s/font-family = \".*\"/font-family = \"$font_name\"/g" ~/.config/ghostty/config
+      pkill -SIGUSR2 ghostty
+    fi
+
+    if [[ -f ~/.config/wal/templates/dunstrc  ]]; then
+      sed -i "s/font = .*/font = $font_name/g" ~/.config/wal/templates/dunstrc
+    fi
+
+    if [[ -f ~/.cache/wal/dunstrc  ]]; then
+      sed -i "s/font = .*/font = $font_name/g" ~/.cache/wal/dunstrc
+      dunstctl reload
+      pkill -e --signal SIGKILL dunst
+    fi
+
+    if [[ -f ~/.config/mako/config  ]]; then
+      sed -i "s/font=.*/font=$font_name/g" ~/.config/mako/config
+      makoctl reload
+      pkill -e --signal SIGKILL mako
+    fi
+
+    if [[ -f ~/.config/rofi/style.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 16\"/g" ~/.config/rofi/style.rasi
+    fi    
+
+    if [[ -f ~/.config/rofi/menu-style.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 17\"/g" ~/.config/rofi/menu-style.rasi
+
+    fi
+    
+    if [[ -f ~/.config/rofi/menu-style-minimal.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 14\"/g" ~/.config/rofi/menu-style-minimal.rasi
+
+    fi 
+
+    if [[ -f ~/.config/rofi/menu-style-clipboard.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 12\"/g" ~/.config/rofi/menu-style-clipboard.rasi
+
+    fi 
+
+    if [[ -f ~/.config/rofi/wallpaper/themes/wallpaper-select.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 10\"/g" ~/.config/rofi/wallpaper/themes/wallpaper-select.rasi
+    fi 
+
+    if [[ -f ~/.config/rofi/wallpaper/themes/wallpaper-select-xorg.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 8\"/g" ~/.config/rofi/wallpaper/themes/wallpaper-select-xorg.rasi
+    fi
+
+    if [[ -f ~/.config/rofi/applaunch/my-style.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 19\"/g" ~/.config/rofi/applaunch/my-style.rasi
+
+    fi 
+
+    if [[ -f ~/.config/rofi/applaunch/my-style-hypr.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 12\"/g" ~/.config/rofi/applaunch/my-style-hypr.rasi
+
+    fi 
+
+    if [[ -f ~/.config/rofi/applaunch/my-style-hypr2.rasi ]]; then
+      sed -i "s/font: \".*\"/font: \"$font_name 12\"/g" ~/.config/rofi/applaunch/my-style-hypr2.rasi
+
+    fi 
+
+    #sed -i "s/font-family: .*/font-family: '$font_name';/g" ~/.config/waybar/style.css
+    sed -i "s/font-family: .*/font-family: '$font_name';/g" ~/.config/swayosd/style.css
+    xml ed -L \
+      -u '//match[@target="pattern"][test/string="monospace"]/edit[@name="family"]/string[1]' \
+      -v "$font_name" \
+      ~/.config/fontconfig/fonts.conf
+
+    pkill -SIGUSR2 waybar
+    
+  else
+    echo "Font '$font_name' not found."
+    exit 1
+  fi
+else
+  echo "Usage: omnix-font-set <font-name>"
+fi

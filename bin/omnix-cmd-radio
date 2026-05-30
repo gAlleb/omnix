@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+RADIOVOLUME="100"
+declare -Ag radio_stations
+radio_stations[omFM Main Stream]="https://stream.omfm.ru:8443/stream"
+radio_stations[Rock @ omFM]="https://stream.omfm.ru:8443/rock"
+radio_stations[Coma @ omFM]="https://stream.omfm.ru:8443/coma"
+radio_stations[Core @ omFM]="https://stream.omfm.ru:8443/core"
+radio_stations[Terra @ omFM]="https://stream.omfm.ru:8443/terra"
+radio_stations[Chill @ omFM]="https://stream.omfm.ru:8443/chill"
+radio_stations[Cafe De Paris @ omFM]="https://stream.omfm.ru:8443/cdp"
+radio_stations[Total Rock]="https://s3.citrus3.com:8056/stream"
+
+
+menu() {
+    printf '%s\n' "Quit"
+    printf '%s\n' "${!radio_stations[@]}" | sort
+}
+
+# Functions for sending notification messages
+start_radio() {
+    notify-send "Starting radio" "Playing station: $1. 🎶"
+}
+
+end_radio() {
+    notify-send "Stopping radio" "You have quit radio. 🎶"
+}
+
+main() {
+    ROFI_PROMPT='Choose radio station:'
+    
+    # Check if mpv is running and get metadata
+#    if pgrep -x "mpv" > /dev/null; then
+#        ARTIST=$(playerctl metadata --player mpv artist 2>/dev/null || echo "")
+#        TITLE=$(playerctl metadata --player mpv title 2>/dev/null || echo "")
+#        
+#        if [ -n "$ARTIST" ] && [ -n "$TITLE" ]; then
+#            ROFI_PROMPT="np: $ARTIST \n $TITLE | $ROFI_PROMPT"
+#        elif [ -n "$TITLE" ]; then # If only title is available
+#            ROFI_PROMPT="np: $TITLE | $ROFI_PROMPT"
+#        fi
+#    fi
+
+    # Choosing a radio station from array sourced in 'config'.
+    choice=$(menu | rofi -dmenu -theme ~/.config/rofi/menu-style-minimal.rasi -p "$ROFI_PROMPT") || exit 1
+
+    case $choice in
+    Quit)
+        end_radio
+        pkill -f "mpv --volume"
+        exit
+        ;;
+    *)
+        pkill -f "mpv --volume" || echo "mpv not running."
+        start_radio "$choice"
+        exec mpv --volume="${RADIOVOLUME:-100}" "${radio_stations["${choice}"]}"
+        return        
+        ;;
+    esac
+
+}
+
+main
+

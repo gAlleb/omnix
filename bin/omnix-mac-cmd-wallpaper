@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# 1. PATH: Includes /opt/local/bin for MacPorts (Intel Macs)
+export PATH="/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${HOME}/.local/bin:/opt/local/lib/ImageMagick7/bin:${PATH}"
+
+WALL_DIR="$HOME/.config/wallpaper"
+
+main() {
+    # Check if dir exists
+    if [ ! -d "$WALL_DIR" ]; then
+        osascript -e "display notification \"Folder not found\" with title \"Error\""
+        exit 1
+    fi
+
+    # Select File via AppleScript
+    FILE_PATH=$(osascript -e "
+        set wallPath to POSIX file \"$WALL_DIR\"
+        try
+            set selectedFile to choose file \
+                with prompt \"Choose a Wallpaper:\" \
+                default location wallPath \
+                of type {\"public.image\"} \
+                invisibles false \
+                without multiple selections allowed
+            return POSIX path of selectedFile
+        on error
+            return \"false\"
+        end try
+    ")
+
+    if [ "$FILE_PATH" = "false" ] || [ -z "$FILE_PATH" ]; then
+        exit 0
+    fi
+
+    # Set Desktop Wallpaper
+    osascript -e "tell application \"System Events\"
+        set picture of every desktop to POSIX file \"$FILE_PATH\"
+    end tell"
+
+    # Generate Colors (Wal will now find MacPorts' magick)
+    wal -n -i "$FILE_PATH"
+
+    # Reload Sketchybar
+    if [ -f "/usr/local/bin/sketchybar" ]; then
+        /usr/local/bin/sketchybar --reload
+    elif command -v sketchybar &> /dev/null; then
+        sketchybar --reload
+    fi
+
+    # Reload AeroSpace
+    if command -v aerospace &> /dev/null; then
+        aerospace reload-config
+    fi
+
+    # Update Kitty (Broadcast to all /tmp/mykitty* sockets)
+    if command -v kitty &> /dev/null; then
+        for socket in /tmp/mykitty*; do
+            if [ -S "$socket" ]; then
+                kitty @ --to "unix:$socket" set-colors -a "$HOME/.cache/wal/colors-kitty.conf" > /dev/null 2>&1
+            fi
+        done
+    fi
+
+    if pgrep -i "ghostty" > /dev/null; then
+        osascript -e '
+        tell application "Ghostty" to activate
+        tell application "System Events"
+            tell process "Ghostty"
+                try
+                    click menu item "Reload Configuration" of menu "Ghostty" of menu bar item "Ghostty" of menu bar 1
+                on error
+                    # Fallback: Send Cmd+Shift+, (Default reload shortcut)
+                    keystroke "," using {command down, shift down}
+                end try
+            end tell
+        end tell
+        '
+    fi
+
+    if [ -f "$HOME/.config/alacritty/alacritty.toml" ]; then
+        touch "$HOME/.config/alacritty/alacritty.toml"
+    fi
+}
+
+main

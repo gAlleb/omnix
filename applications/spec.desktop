@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Spec
+GenericName=Spec
+Comment=Show audio spektr
+Exec=spec %F 
+Terminal=false
+Type=Application
+Keywords=Text;editor;
+Icon=terminal
+Categories=Utility;Music;Audio;
+StartupNotify=false

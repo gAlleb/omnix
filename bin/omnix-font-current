@@ -1,0 +1,3 @@
+#!/bin/bash
+
+grep -oP 'family = \s*["'\'']?\K[^;"'\'']+' ~/.config/alacritty/font.toml | head -n1

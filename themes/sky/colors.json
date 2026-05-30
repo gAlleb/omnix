@@ -1,0 +1,29 @@
+{
+    "checksum": "ae442188c2cde45322d31d611915b773",
+    "wallpaper": "/home/stefan/.config/wallpaper/121534711_p0.png",
+    "alpha": "100",
+
+    "special": {
+        "background": "#161311",
+        "foreground": "#c4c4c3",
+        "cursor": "#c4c4c3"
+    },
+    "colors": {
+        "color0": "#161311",
+        "color1": "#58514C",
+        "color2": "#9B6437",
+        "color3": "#A17247",
+        "color4": "#C47A40",
+        "color5": "#B9873A",
+        "color6": "#B48B50",
+        "color7": "#c4c4c3",
+        "color8": "#6f625b",
+        "color9": "#58514C",
+        "color10": "#9B6437",
+        "color11": "#A17247",
+        "color12": "#C47A40",
+        "color13": "#B9873A",
+        "color14": "#B48B50",
+        "color15": "#c4c4c3"
+    }
+}

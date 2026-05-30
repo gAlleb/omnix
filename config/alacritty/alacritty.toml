@@ -1,0 +1,93 @@
+[[keyboard.bindings]]
+action = "Paste"
+key = "V"
+mods = "SUPER"
+
+[[keyboard.bindings]]
+action = "Copy"
+key = "C"
+mods = "SUPER"
+
+[[keyboard.bindings]]
+action = "PasteSelection"
+key = "Insert"
+mods = "Shift"
+
+[[keyboard.bindings]]
+action = "ResetFontSize"
+key = "Key0"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "IncreaseFontSize"
+key = "Equals"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "DecreaseFontSize"
+key = "Minus"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "ClearLogNotice"
+key = "L"
+mods = "Control"
+
+[[keyboard.bindings]]
+chars = "\f"
+key = "L"
+mods = "Control"
+
+[[keyboard.bindings]]
+action = "ScrollPageUp"
+key = "PageUp"
+mode = "~Alt"
+mods = "Shift"
+
+[[keyboard.bindings]]
+action = "ScrollPageDown"
+key = "PageDown"
+mode = "~Alt"
+mods = "Shift"
+
+[[keyboard.bindings]]
+action = "ScrollToTop"
+key = "Home"
+mode = "~Alt"
+mods = "Shift"
+
+[[keyboard.bindings]]
+action = "ScrollToBottom"
+key = "End"
+mode = "~Alt"
+mods = "Shift"
+
+[general]
+import = ["~/.config/alacritty/font.toml", "~/.config/alacritty/color.toml"]
+
+[cursor.style]
+blinking = "On"
+shape = "Underline"
+
+[env]
+TERM = "xterm-256color"
+
+[scrolling]
+history = 5000
+
+[window]
+decorations = "Buttonless"
+opacity = 0.85
+title = "Alacritty"
+
+[window.class]
+general = "Alacritty"
+instance = "Alacritty"
+
+[window.padding]
+x = 10
+y = 10
+
+[window.position]
+x = 0
+y = 0

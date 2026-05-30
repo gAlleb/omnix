@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# This script efficiently waits for power events using inotify.
+# It uses zero CPU while idle.
+
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+FLAG_DIR="$RUNTIME_DIR"
+
+# Ensure the directory exists before we start watching it.
+mkdir -p "$FLAG_DIR"
+
+# The main, efficient loop.
+# 'inotifywait' will block until a 'create' event happens in the directory.
+# The '-m' (monitor) flag makes it wait forever for new events.
+/usr/bin/inotifywait -m -e create --format '%f' "$FLAG_DIR" | while read -r FILENAME; do
+    # When inotifywait sees a new file, it prints the filename.
+    # We read that filename into the FILENAME variable.
+
+    if [ "$FILENAME" = "power-unplug-event" ]; then
+        notify-send -u critical -a 'System' 'Power Cable Disconnected'
+        canberra-gtk-play -i suspend-error
+        # Clean up the flag file
+        rm -f "$FLAG_DIR/$FILENAME"
+    fi
+
+    if [ "$FILENAME" = "power-plug-event" ]; then
+        notify-send -u critical -a 'System' 'Power Cable Connected'
+        canberra-gtk-play -i suspend-error
+        # Clean up the flag file
+        rm -f "$FLAG_DIR/$FILENAME"
+    fi
+done

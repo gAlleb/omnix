@@ -1,0 +1,170 @@
+@import "../../.cache/wal/colors-waybar.css";
+* {
+	border-radius: 16;
+	border: none;
+	font-family: SF Pro Display, Symbols Nerd Font;
+	font-size: 14px;
+	margin: 0px 5px;
+}
+
+@define-color bg70 @background70;
+@define-color bg @background;
+@define-color fg @foreground;
+@define-color gr #545d70;
+@define-color red #f7768e;
+@define-color green #b9f27c;
+@define-color blue @color3;
+@define-color cyan @color3;
+window#waybar {
+	background-color: @background70;
+    color: #ffffff;
+    transition-property: background-color;
+    transition-duration: .5s;
+       /* opacity: 0.7; */
+}
+#workspaces {
+	font-weight: bold;
+  margin: 0px 0px;
+}
+#workspaces button {
+	color: @fg;
+	background-color: transparent; 
+	padding: 0px 0px;
+	margin: 0px 0px;
+  font-weight: bold;
+}
+#workspaces button.empty {
+	color: @color9;
+}
+#workspaces button:hover {
+	color: @fg;
+}
+#workspaces button.active {
+	color: @bg;
+	background-color: @cyan;
+
+}
+#workspaces button.urgent {
+	color: @red;
+}
+
+#backlight,
+#mpd,
+#cpu,
+#memory,
+#window,
+#battery,
+#network,
+#bluetooth,
+#custom-swaync,
+#custom-media,
+#custom-cmus,
+#custom-weather,
+#custom-updates,
+#custom-hdd,
+#custom-wlogout,
+#custom-screenshot,
+#tray,
+#language,
+#pulseaudio,
+#custom-expand-icon,
+#custom-updates-icon,
+#custom-temperature,
+#custom-screenrecording-indicator,
+#mpris,
+#custom-vpn,
+#custom-playerctl,
+#clock {
+	padding: 0 4px;
+	margin: 0 0px;
+	color: @fg;
+	background-color: transparent;
+}
+
+#custom-updates-icon {
+  margin-right: -5px;
+}
+
+#custom-screenrecording-indicator {
+  font-size: 16px;
+}
+
+#custom-vpn {
+  font-size: 9px;
+  margin-left: -13px;
+  margin-bottom: -12px;
+}
+
+#custom-expand-icon {
+  background-color: @color3_70;
+  padding: 0px 4px 0px 3px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+#tray {
+  background-color: @color3_70;
+  padding: 0px 6px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+#custom-weather {
+  background-color: @color3_70;
+  padding: 0px 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+#custom-menu {
+	background-color: transparent;
+	color: @cyan;
+	padding: 0px 0px;
+	margin-left: 6px;
+	margin-top: 1px;
+	font-size: 18px;
+}
+
+#custom-screenshot {
+  font-size: 18px;
+}
+
+#bluetooth {
+  margin-left: 5px;
+  margin-right: 0px;
+  font-size: 16px;
+}
+
+#custom-wlogout{
+  background-color: @color3_70;
+  padding: 0px 4px 0px 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  margin-left: 6px;
+  margin-right: 6px;
+  color: @bg;
+}
+
+#custom-sep {
+	color: rgba(0, 0, 0, 0.0);
+}
+
+#window {
+	background-color: transparent;
+	color: @cyan;
+	font-weight: bold;
+	font-family: 'CaskaydiaMono Nerd Font';
+	font-size: 20px;
+}
+
+#language {
+	min-width: 18px;
+}
+
+#clock {
+  padding: 0px 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  background-color: @color3_70;
+  color: @bg;
+}

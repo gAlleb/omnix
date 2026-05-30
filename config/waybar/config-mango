@@ -1,0 +1,335 @@
+{
+	"layer": "top",
+	"position": "top",
+	"height": 28,
+  "margin-left": 6,
+  "margin-right": 6,
+	"margin-top": 5,
+
+  "modules-center": ["image#album_art","custom/playerctl"],
+  "modules-left": ["custom/menu", "custom/sep", "ext/workspaces", "custom/sep", "dwl/window"],
+  "modules-right": ["group/tray-expander", "idle_inhibitor", "cpu", "memory", "custom/hdd", "custom/temperature", "custom/weather", "group/updates-expander", "battery", "custom/screenrecording-indicator", "backlight", "custom/screenshot", "pulseaudio", "clock", "custom/swaync", "bluetooth", "network", "custom/vpn", "custom/wlogout"],
+
+  "idle_inhibitor": {
+       "format": "{icon}",
+       "format-icons": {
+        "activated": "󰅶",
+        "deactivated": "󰒲"
+      }
+  },
+
+  "image#album_art": {
+      "exec": "~/.config/waybar/scripts/playerctl/cover.sh",
+      "size": 26,    
+      "on-click": "~/.config/waybar/scripts/playerctl/playerctl-notify.sh",
+      "interval": 1800,
+      "signal": 10,
+  },
+
+  "custom/temperature": {
+      "format": "{}",
+      "interval": 20,
+      "exec": "~/.config/waybar/scripts/temp.sh",
+      "tooltip": false,
+      "on-click": "~/.config/waybar/scripts/temp.sh",
+  },
+
+  "custom/vpn": {
+    "format": "{icon}",
+    "tooltip": "true",
+    "exec": "~/.config/waybar/scripts/vpn-check.sh",
+    "interval": 5,
+    "return-type": "json",
+    "format-icons": ["",""]
+  },
+
+  "network": {
+    "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+    "format": "{icon}",
+    "format-wifi": "{icon}",
+    "format-ethernet": "󰀂",
+    "format-disconnected": "󰤮",
+    "tooltip-format-wifi": "{essid} ({frequency} GHz)\n⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
+    "tooltip-format-ethernet": "⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
+    "tooltip-format-disconnected": "Disconnected",
+    "interval": 3,
+    "spacing": 1,
+    "on-click": "omnix-launch-tui nmtui"
+  },
+
+  "custom/playerctl": {
+      "format": "{}",
+      "max-length": 30,
+      "exec": "~/.config/waybar/scripts/playerctl/playerctl-waybar.sh",
+      "on-click": "~/.config/waybar/scripts/playerctl/playerctl-waybar-on-click.sh",
+    	"on-click-right": "setsid -f kitty --class=rmpc -o font_size=12 -e rmpc",
+    	"on-click-middle": "~/.config/waybar/scripts/playerctl/playerctl-notify.sh",
+      "signal": 9,
+  },
+
+  "mpris": {
+	    "format": "{player_icon} {dynamic}",
+	    "format-paused": "{status_icon} {dynamic}",
+      "max-length": 30,
+	    "player-icons": {
+		      "default": "",
+		      "mpd": "",
+    	},
+      "status-icons": {
+  		    "paused": "",
+	    },
+      "dynamic-order":[
+           "artist", "title",
+      ],
+    	"ignored-players": [],
+      "on-click": "~/.config/waybar/scripts/playerctl/playerctl-waybar-on-click.sh",
+    	"on-click-right": "setsid -f kitty --class=rmpc -o font_size=12 -e rmpc",
+    	"on-click-middle": "~/.config/waybar/scripts/playerctl/playerctl-notify.sh",
+  },  
+
+  "backlight": {
+      "device": "intel_backlight",
+      "format": "{icon} {percent}%",
+      "format-icons": ["󰃜","󰃛","󰃞", "󰃝", "󰃟", "󰃠"],
+      "min-length": 4,
+  },
+
+  "custom/wlogout": {
+      "format": "{icon}",
+      "on-click": "wlogout",
+      "format-icons": "󰍃",
+  },
+
+  "custom/swaync": {
+      "tooltip":true,
+      "format": "{icon} {}",
+      "format-icons": {
+          "notification": "<span foreground='red'><sup></sup></span>",
+          "none": "",
+          "dnd-notification": "<span foreground='red'><sup></sup></span>",
+          "dnd-none": "",
+          "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+          "inhibited-none": "",
+          "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+          "dnd-inhibited-none": ""
+      },
+      "return-type": "json",
+      "exec-if": "which swaync-client",
+      "exec": "swaync-client -swb",
+      "on-click": "sleep 0.1 && swaync-client -t -sw",
+      "on-click-right": "swaync-client -d -sw",
+      "escape": true,
+  },
+
+  "mpd": {
+    	"format": "{stateIcon}  {artist} - {title}",
+	    "format-disconnected": "Disconnected ",
+	    "format-stopped": "Stopped",
+	    "interval": 2,
+          "max-length": 30,
+    	"consume-icons": {
+	      	"on": " " // Icon shows only when "consume" is on
+    	},
+	    "random-icons": {
+	      	"off": "", // Icon grayed out when "random" is off
+	      	"on": " "
+    	},
+    	"repeat-icons": {
+      		"on": " "
+    	},
+    	"single-icons": {
+	      	"on": "1 "
+    	},
+    	"state-icons": {
+	      	"paused": "",
+	      	"playing": "",
+    	},
+    	"tooltip-format": "MPD (connected)",
+    	"tooltip-format-disconnected": "MPD (disconnected)",
+    	"on-click": "mpc toggle",
+    	"on-click-right": "setsid -f kitty --class=rmpc -o font_size=12 -e rmpc",
+    	"on-click-middle": "~/.config/waybar/scripts/mpd-notify.sh",
+  },
+
+  "cpu": {
+	  	"format": " {usage}%",
+	  	"tooltip": false,
+	  	"on-click": "setsid -f alacritty --class=top -e top"
+    },
+
+  "custom/screenshot": {
+	    "on-click": "omnix-cmd-screenshot",
+      "on-click-middle": "omnix-cmd-screenrecord region audio",
+      "on-click-right": "omnix-cmd-screenshot clipboard",
+	    "format": "",
+    },
+
+  "custom/screenrecording-indicator": {
+    "on-click": "omnix-cmd-screenrecord",
+    "exec": "~/.config/waybar/scripts/screen-recording.sh",
+    "signal": 8,
+    "return-type": "json"
+  },
+
+	"memory": {
+	  	"format": " {}%",
+	  	"tooltip": false
+	},
+
+	"custom/menu": {
+	  	"format": "{icon}",
+  		"format-icons": "",
+	  	"on-click": "omnix-app-menu",
+	  	"escape": true,
+  		"tooltip": false
+	},
+
+  "ext/workspaces": {
+    "format": "{icon}",
+    "ignore-hidden": false,
+    "on-click": "activate",
+    "sort-by-id": true
+  },
+  "dwl/tags": {
+    "num-tags": 9
+  },
+  "dwl/window": {
+    "format": "-{layout}-     {title}",
+    "icon": true,
+    "icon-size": 24,
+  },
+	"tray": {
+		  "icon-size": 16,
+		  "spacing": 0,
+	},
+
+	"clock": {
+		  "format-alt": "{:%Y-%m-%d}",
+		  "format": "{:%a,  %b %d  %H:%M}",
+	    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+      "calendar": {
+          "mode"          : "year",
+          "mode-mon-col"  : 3,
+          "weeks-pos"     : "right",
+          "on-scroll"     : 1,
+          "format": {
+              "months":     "<span color='#ffead3'><b>{}</b></span>",
+              "days":       "<span color='#ecc6d9'><b>{}</b></span>",
+              "weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
+              "weekdays":   "<span color='#ffcc66'><b>{}</b></span>",
+              "today":      "<span color='#ff6699'><b><u>{}</u></b></span>"
+              }
+           }
+	},
+
+	"custom/weather": {
+	    "format": "{}",
+	    "interval": 1800,
+	    "exec": "~/.config/waybar/scripts/forecast.sh",
+	    "tooltip": false,
+    	"on-click": "setsid -f alacritty -e less -Sfr $HOME/.cache/weatherreport"
+	},
+
+  "custom/updates": {
+      "format": "{}",
+      "interval": 1800,
+      "exec": "~/.config/waybar/scripts/updates-check.sh",
+      "tooltip": false,
+  },
+
+  "disk": {
+    	"interval": 1800,
+	    "format": "{percentage_free}% free on {path}",
+  },
+
+  "custom/hdd": {
+      "format": "{}",
+      "interval": 1800,
+      "exec": "~/.config/waybar/scripts/hdd.sh",
+      "tooltip": false,
+  },
+
+	"custom/sep": {
+	    "format": "_",
+	},
+
+  "pulseaudio": {
+  	  "format": "{icon} {volume}%",
+      "format-bluetooth": "{icon} 󰂰 {volume}%",
+      "format-muted": "󰖁",
+      "format-icons": {
+          "headphone": "",
+          "hands-free": "",
+          "headset": "",
+          "phone": "",
+          "portable": "",
+          "car": "",
+          "default": ["", "", "󰕾", ""],
+          "ignored-sinks": ["Easy Effects Sink"],
+      },
+  	  "scroll-step": 1,
+    	"on-click": "pavucontrol",
+      "on-click-right": "omnix-audioswitcher",
+      "on-click-middle": "omnix-audioswitcher-precise",
+      "on-scroll-up": "pactl set-sink-mute 0 false ; pactl set-sink-volume 0 -3%",
+      "on-scroll-down": "pactl set-sink-mute 0 false ; pactl set-sink-volume 0 +3%",
+  },
+
+    "bluetooth": {
+    "format": "",
+    "format-disabled": "󰂲",
+    "format-connected": "",
+    "tooltip-format": "Devices connected: {num_connections}",
+    "on-click": "blueman-manager"
+  },
+
+  "battery": { 
+	  "bat": "BAT0",
+	  "format": "{icon}",
+    "format-discharging":"{icon}",
+    "format-charging": "{icon}",
+    "format-plugged": "",
+    "format-icons": {
+      "charging": ["󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"],
+      "default": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+      "alt": ["", "", "", "", ""],  
+    },
+    "tooltip-format-discharging": "{power:>1.0f}W↓ {capacity}%",
+    "tooltip-format-charging": "{power:>1.0f}W↑ {capacity}%",
+    "tooltip-format-full": "Full - {capacity}%",
+    "tooltip-format-not-charging": "Not charging - {capacity}%",
+    "interval": 30,
+    "states": {
+      "warning": 20,
+      "critical": 10
+    }
+  },
+
+  "group/tray-expander": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 600,
+      "children-class": "tray-group-item"
+    },
+    "modules": ["custom/expand-icon", "tray"]
+  },
+
+   "custom/expand-icon": {
+    "format": "🐧",
+    "tooltip": false
+  },
+
+  "group/updates-expander": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 600,
+      "children-class": "updates-group-item"
+    },
+    "modules": ["custom/updates-icon", "custom/updates"]
+  },
+
+  "custom/updates-icon": {
+    "format": "",
+    "tooltip": false
+  },
+}

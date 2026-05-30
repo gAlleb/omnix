@@ -1,0 +1,6 @@
+#!/bin/bash
+playerctl --all-players --follow metadata --format '{{status}} {{title}} {{artist}}' | while read -r line; do
+    # When playerctl detects a change in status or title it sends pkill to waybar
+   pkill -RTMIN+9 waybar >/dev/null
+   pkill -RTMIN+10 waybar >/dev/null
+done

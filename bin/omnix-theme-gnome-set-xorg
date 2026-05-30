@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Configuration
+GTK3_THEME="$1"
+GTK3_ICONS="$2"
+PREFER_DARK_THEME="$3" # New variable for the dark theme preference
+
+gsettings set org.gnome.desktop.interface gtk-theme $GTK3_THEME
+gsettings set org.gnome.desktop.interface icon-theme $GTK3_ICONS
+
+if [ "$PREFER_DARK_THEME" = "0" ]; then
+gsettings set org.gnome.desktop.interface color-scheme "prefer-light"
+else
+gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
+fi
+
+mkdir -p ~/.config/gtk-3.0/
+mkdir -p ~/.config/gtk-4.0/ # Ensure gtk-4.0 directory also exists
+
+# --- ~/.config/gtk-3.0/settings.ini ---
+# Ensure [Settings] header exists in gtk-3.0
+if ! grep -q "\[Settings\]" ~/.config/gtk-3.0/settings.ini 2>/dev/null; then
+    echo "[Settings]" >> ~/.config/gtk-3.0/settings.ini
+fi
+
+# Add dummy line, then update/add settings for gtk-3.0
+sed -i "/^\[Settings\]/a dummy_line_30" ~/.config/gtk-3.0/settings.ini
+sed -i -e "/^gtk-theme-name=/d" \
+       -e "/^gtk-icon-theme-name=/d" \
+       -e "/^gtk-application-prefer-dark-theme=/d" \
+       -e "s/^dummy_line_30/gtk-theme-name=$GTK3_THEME\ngtk-icon-theme-name=$GTK3_ICONS\ngtk-application-prefer-dark-theme=$PREFER_DARK_THEME/" \
+       ~/.config/gtk-3.0/settings.ini
+
+# --- ~/.config/gtk-4.0/settings.ini ---
+# Ensure [Settings] header exists in gtk-4.0
+if ! grep -q "\[Settings\]" ~/.config/gtk-4.0/settings.ini 2>/dev/null; then
+    echo "[Settings]" >> ~/.config/gtk-4.0/settings.ini
+fi
+
+# Add dummy line, then update/add settings for gtk-4.0
+sed -i "/^\[Settings\]/a dummy_line_40" ~/.config/gtk-4.0/settings.ini
+sed -i -e "/^gtk-theme-name=/d" \
+       -e "/^gtk-icon-theme-name=/d" \
+       -e "/^gtk-application-prefer-dark-theme=/d" \
+       -e "s/^dummy_line_40/gtk-theme-name=$GTK3_THEME\ngtk-icon-theme-name=$GTK3_ICONS\ngtk-application-prefer-dark-theme=$PREFER_DARK_THEME/" \
+       ~/.config/gtk-4.0/settings.ini
+
+# --- ~/.gtkrc-2.0 ---
+# Update gtk-icon-theme-name in ~/.gtkrc-2.0
+sed -i "s/^gtk-icon-theme-name=\".*\"/gtk-icon-theme-name=\"$GTK3_ICONS\"/" ~/.gtkrc-2.0
+# Update gtk-theme-name in ~/.gtkrc-2.0 (corrected from your original script)
+sed -i "s/^gtk-theme-name=\".*\"/gtk-theme-name=\"$GTK3_THEME\"/" ~/.gtkrc-2.0
+
+echo "GTK settings updated."
+

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=senpai
+Exec=alacritty --class=senpai --title=senpai -e bash -i -c "senpai"
+Type=Application
+Comment=senpai
+Terminal=false
+Icon=senpai
+Categories=Network;IRCClient;
+Keywords=irc;chat;internet;

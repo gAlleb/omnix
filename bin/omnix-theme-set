@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# omnix-theme-set: Set a theme, specified by its name.
+# Usage: omarchy-theme-set <theme-name>
+
+if [[ -z "$1" && "$1" != "CNCLD" ]]; then
+  echo "Usage: omnix-theme-set <theme-name>" >&2
+  exit 1
+fi
+
+THEMES_DIR="$HOME/.config/omnix/themes/"
+CURRENT_THEME_DIR="$HOME/.config/omnix/current/theme"
+
+THEME_NAME=$(echo "$1" | sed -E 's/<[^>]+>//g' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+THEME_PATH="$THEMES_DIR/$THEME_NAME"
+
+# Check if the theme entered exists
+if [[ ! -d "$THEME_PATH" ]]; then
+  echo "Theme '$THEME_NAME' does not exist in $THEMES_DIR" >&2
+  exit 2
+fi
+
+# Update theme symlinks
+ln -nsf "$THEME_PATH" "$CURRENT_THEME_DIR"
+
+# Change gnome modes
+omnix-theme-gnome-set
+omnix-theme-set-browser
+
+# run wal 
+wal -c 
+wal --theme "$CURRENT_THEME_DIR/colors.json"
+pkill -SIGUSR2 waybar
+swaync-client -rs
+dunstctl reload
+makoctl reload 
+pkill -e --signal SIGKILL dunst
+wal-telegram --wal
+$HOME/.config/nwg-dock-hyprland/reload.sh &
+$HOME/.config/swayosd/launch.sh &
+
+# Set new background
+omnix-theme-bg-next
+
+
+
+

@@ -1,0 +1,29 @@
+{
+    "checksum": "454ce65d73f96572a239f6288feee546",
+    "wallpaper": "/home/stefan/.config/wallpaper/watchtower-mountains-and-forests.jpg",
+    "alpha": "100",
+
+    "special": {
+        "background": "#0b101b",
+        "foreground": "#c2c3c6",
+        "cursor": "#c2c3c6"
+    },
+    "colors": {
+        "color0": "#0b101b",
+        "color1": "#2469AC",
+        "color2": "#5A5D9B",
+        "color3": "#416CB5",
+        "color4": "#936F88",
+        "color5": "#219AD4",
+        "color6": "#1AB6E6",
+        "color7": "#c2c3c6",
+        "color8": "#5a606f",
+        "color9": "#2469AC",
+        "color10": "#5A5D9B",
+        "color11": "#416CB5",
+        "color12": "#936F88",
+        "color13": "#219AD4",
+        "color14": "#1AB6E6",
+        "color15": "#c2c3c6"
+    }
+}

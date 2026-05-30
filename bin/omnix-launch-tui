@@ -1,0 +1,6 @@
+#!/bin/bash
+
+case "${TERMINAL:-alacritty}" in
+alacritty | kitty | ghostty)
+  exec setsid "$TERMINAL" -o "font.size=10" --class=TUI.float -e "$@"
+esac

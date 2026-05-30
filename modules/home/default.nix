@@ -1,0 +1,25 @@
+{ config, lib, pkgs, ... }:
+{
+  imports = [
+    ./shell.nix
+    ./git.nix
+    ./tmux.nix
+    ./gtk.nix
+    ./xcompose.nix
+    ./dotfiles.nix
+    ./packages.nix
+    ./xdg.nix
+    ./photogimp.nix
+    ./mpd.nix
+  ];
+
+  home.username = "stefan";
+  home.homeDirectory = "/home/stefan";
+  home.stateVersion = "25.05";
+
+  # home-manager (master) tracks ahead of nixos-unstable by one minor;
+  # silence the noisy "Using mismatched versions" warning on rebuild.
+  home.enableNixpkgsReleaseCheck = false;
+
+  programs.home-manager.enable = true;
+}

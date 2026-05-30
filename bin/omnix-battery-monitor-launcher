@@ -1,0 +1,5 @@
+#!/bin/bash
+while true; do
+  omnix-battery-monitor 
+  sleep 30
+done

@@ -1,0 +1,42 @@
+dwm.normfgcolor: {color15}
+dwm.normbgcolor: {color0}
+dwm.normbordercolor: {color1}
+dwm.normfloatcolor: {color8}
+
+dwm.selfgcolor: {color15}
+dwm.selbgcolor: {color2}
+dwm.selbordercolor: {color3}
+dwm.selfloatcolor: {color3}
+
+dwm.titlenormfgcolor: {color15}
+dwm.titlenormbgcolor: {color1}
+dwm.titlenormbordercolor: {color1}
+dwm.titlenormfloatcolor: {color1}
+
+dwm.titleselfgcolor: {color0}
+dwm.titleselbgcolor: {color3}
+dwm.titleselbordercolor: {color3}
+dwm.titleselfloatcolor: {color3}
+
+dwm.tagsnormfgcolor: {color15}
+dwm.tagsnormbgcolor: {color0}
+dwm.tagsnormbordercolor: {color3}
+dwm.tagsnormfloatcolor: {color8}
+
+dwm.tagsselfgcolor: {color0}
+dwm.tagsselbgcolor: {color3}
+dwm.tagsselbordercolor: {color3}
+dwm.tagsselfloatcolor: {color3}
+
+dwm.hidnormfgcolor: {color15}
+dwm.hidnormbgcolor: {color0}
+dwm.hidselfgcolor: {color3}
+dwm.hidselbgcolor: {color8}
+
+dwm.urgfgcolor: {color0}
+dwm.urgbgcolor: {color4}
+dwm.urgbordercolor: {color1}
+dwm.urgfloatcolor: {color1}
+
+dwm.ltsymbolfgcolor: {color0}
+dwm.ltsymbolbgcolor: {color3}

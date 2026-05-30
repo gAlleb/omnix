@@ -1,0 +1,21 @@
+{ config, lib, pkgs, ... }:
+{
+  imports = [
+    ./options.nix
+    ./boot.nix
+    ./networking.nix
+    ./locale.nix
+    ./users.nix
+    ./audio.nix
+    ./bluetooth.nix
+    ./desktop.nix
+    ./fonts.nix
+    ./power.nix
+    ./docker.nix
+    ./services.nix
+    ./filesystems.nix
+    ./packages.nix
+    ./nix.nix
+    ./ssh.nix
+  ];
+}

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=rmpc
+Exec=kitty --class=rmpc -o font_size=12 --title=rmpc -e bash -i -c "rmpc"
+Type=Application
+Comment=rmpc
+Terminal=false
+Icon=beatbox
+Categories=Music;
+Keywords=music;player;

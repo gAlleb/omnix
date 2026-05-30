@@ -1,0 +1,11 @@
+#!/bin/bash
+
+case "${EDITOR:-nvim}" in
+nvim | vim | nano | micro | hx)
+  exec setsid "$TERMINAL" -e "$EDITOR" "$@"
+  ;;
+*)
+  exec setsid "$EDITOR" "$@"
+  ;;
+esac
+

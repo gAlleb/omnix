@@ -1,0 +1,32 @@
+[global]
+class = Dunst
+frame_color = "{color3}"
+background = "{color0}"
+separator_color= frame
+font = CaskaydiaMono Nerd Font
+corner_radius = 16
+transparency = 80
+min_icon_size = 100
+max_icon_size = 100
+offset = (8, 42)
+width = (350, 500)
+
+[urgency_low]
+background = "{color0}"
+foreground = "{foreground}"
+timeout = 5 
+min_icon_size = 70
+max_icon_size = 70
+
+[urgency_normal]
+background = "{color0}"
+foreground = "{foreground}"
+timeout = 5 
+
+[urgency_critical]
+background = "{color0}"
+foreground = "{foreground}"
+frame_color = "#fb4934"
+timeout = 15
+
+
