@@ -5,7 +5,7 @@
 , imagemagick
 , zip
 , gzip
-, xorg
+, xrandr
 , procps
 , ...
 }:
@@ -40,7 +40,7 @@ stdenvNoCC.mkDerivation rec {
           "${imagemagick}/bin"
           "${zip}/bin"
           "${gzip}/bin"
-          "${xorg.xrandr}/bin"
+          "${xrandr}/bin"
           "${procps}/bin"
         ]
       }
