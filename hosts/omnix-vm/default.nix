@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 {
   imports = [
-    # See hosts/omnix/default.nix for the rationale.
-    (if builtins.pathExists /etc/nixos/hardware-configuration.nix
-     then /etc/nixos/hardware-configuration.nix
-     else ./hardware-configuration.nix)
+    # Replaced at install time by a copy of
+    # /etc/nixos/hardware-configuration.nix (see INSTALL.md).
+    # The in-repo file is only a stub for `nix flake check`.
+    ./hardware-configuration.nix
   ];
 
   networking.hostName = "omnix-vm";

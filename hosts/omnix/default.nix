@@ -1,13 +1,10 @@
 { config, lib, pkgs, ... }:
 {
   imports = [
-    # Use the freshly-generated hardware-configuration from the running
-    # system if it exists at the canonical /etc/nixos/ path, otherwise
-    # fall back to the in-repo placeholder (sufficient for `nix flake
-    # check` and for bring-up of a known-good VM).
-    (if builtins.pathExists /etc/nixos/hardware-configuration.nix
-     then /etc/nixos/hardware-configuration.nix
-     else ./hardware-configuration.nix)
+    # Replaced at install time by a copy of
+    # /etc/nixos/hardware-configuration.nix (see INSTALL.md).
+    # The in-repo file is only a stub for `nix flake check`.
+    ./hardware-configuration.nix
   ];
 
   networking.hostName = "omnix";

@@ -195,14 +195,30 @@ exact path" below):
 mkdir -p ~/.local/share
 git clone -b omnix-mango https://github.com/galleb/omnix.git \
   ~/.local/share/omnix
+
+# CRITICAL: replace the placeholder hardware-configuration.nix in the
+# repo with the real one that nixos-generate-config wrote for your
+# machine. The repo file is a stub for `nix flake check` only — if
+# left in place, boot will hang waiting for a non-existent partition
+# (the stub assumes a separate /boot which BIOS installs don't have).
+sudo cp /etc/nixos/hardware-configuration.nix \
+  ~/.local/share/omnix/hosts/omnix-vm/hardware-configuration.nix
+sudo chown $USER:users \
+  ~/.local/share/omnix/hosts/omnix-vm/hardware-configuration.nix
+# (use hosts/omnix/ instead of hosts/omnix-vm/ for the real laptop)
+
 cd ~/.local/share/omnix
-sudo nixos-rebuild switch --flake .#omnix-vm    # or .#omnix
+sudo nixos-rebuild boot --flake .#omnix-vm     # or .#omnix
+sudo reboot
 ```
 
-That `nixos-rebuild` is the real install — it replaces the vanilla
-config with this flake: SDDM, Mango, dotfiles, themes, fonts, the
-omnix-* helper scripts in `$PATH`, and all the symlinks under
-`~/.config/`.
+`nixos-rebuild boot` (rather than `switch`) builds the new generation
+and marks it default for the next boot, without restarting anything
+in the current session. This avoids a known dbus-broker race that
+hangs `switch` indefinitely when user units change inside the
+active login. After `reboot` you'll come up directly in the new
+generation with SDDM + Mango + dotfiles + themes + fonts + omnix-*
+helpers + all the symlinks under `~/.config/`.
 
 > **Why this exact path?** Home-manager hardcodes
 > `~/.local/share/omnix/` as the target of its `mkOutOfStoreSymlink`
@@ -210,9 +226,12 @@ omnix-* helper scripts in `$PATH`, and all the symlinks under
 > `~/.config/` will point at `~/.local/share/omnix/config/*`, so the
 > repo has to live there for them to resolve.
 
-> **Hardware-config:** the flake reads `/etc/nixos/hardware-configuration.nix`
-> automatically when it exists (see `hosts/*/default.nix`). You don't
-> need to copy or duplicate it inside the repo.
+> **Why the explicit hardware-config copy?** Earlier versions of the
+> flake tried to auto-pick `/etc/nixos/hardware-configuration.nix`
+> via `builtins.pathExists`. That doesn't work in flake (sandboxed)
+> evaluation — paths outside the flake aren't visible, so the call
+> always returned `false` and the placeholder won. Explicit copy is
+> the only path that's actually reliable.
 
 If the build hits **`hash mismatch in fixed-output derivation`** in
 `pkgs/sfpro-display/` or `pkgs/photogimp-config/`, copy the
