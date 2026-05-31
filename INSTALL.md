@@ -193,7 +193,7 @@ exact path" below):
 
 ```sh
 mkdir -p ~/.local/share
-git clone -b omnix-mango https://github.com/galleb/omnix.git \
+git clone -b omnix-mango https://github.com/galleb/omvoid.git \
   ~/.local/share/omnix
 
 # CRITICAL: replace the placeholder hardware-configuration.nix in the

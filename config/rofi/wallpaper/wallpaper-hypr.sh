@@ -95,7 +95,7 @@ executeCommand() {
     wal-telegram --wal
     echo "\$wallpaper_thumbnail = $selected_thumbnail_path" > $CACHE_DIR/wallpaper_thumbnail
     echo "inputbar { background-image: url(\"$selected_thumbnail_path\", height); }" > $CACHE_DIR/wallpaper_thumbnail.rasi
-    $HOME/.config/nwg-dock-hyprland/reload.sh &
+#    $HOME/.config/nwg-dock-hyprland/reload.sh &
     $HOME/.config/swayosd/launch.sh &
     echo "${selected_wallpaper}" > "${CURRENT_WALLPAPER_PATH_FILE}"
     magick "${selected_wallpaper}" ~/.config/bg.jpg

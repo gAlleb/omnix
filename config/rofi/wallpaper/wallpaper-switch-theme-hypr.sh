@@ -61,7 +61,7 @@ swaync-client -rs
 makoctl reload
 dunstctl reload
 pkill -e --signal SIGKILL dunst
-$HOME/.config/nwg-dock-hyprland/reload.sh &
+#$HOME/.config/nwg-dock-hyprland/reload.sh &
 $HOME/.config/swayosd/launch.sh &
 
 exit 0
