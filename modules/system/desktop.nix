@@ -40,7 +40,11 @@ in
 
   services.displayManager.sddm = {
     enable = true;
-    wayland.enable = true;
+    # SDDM in Wayland mode requires kwin_wayland and stable DRM, which
+    # blows up on Proxmox's std/bochs framebuffer. Keep the greeter in
+    # X11 — the user session (Mango) is still Wayland, registered via
+    # programs.mangowc.
+    wayland.enable = false;
     theme = "sddm-astronaut-theme";
     package = pkgs.kdePackages.sddm;
     extraPackages = with pkgs; [
@@ -48,18 +52,9 @@ in
       kdePackages.qtsvg
       kdePackages.qtmultimedia
       kdePackages.qtvirtualkeyboard
-      kdePackages.layer-shell-qt
     ];
     settings = {
-      General = {
-        InputMethod = "qtvirtualkeyboard";
-        DisplayServer = "wayland";
-        GreeterEnvironment = "QT_WAYLAND_SHELL_INTEGRATION=layer-shell,QT_SCREEN_SCALE_FACTORS=1";
-      };
-      Wayland = {
-        CompositorCommand = "kwin_wayland --drm --no-lockscreen --no-global-shortcuts --locale1";
-        EnableHiDPI = true;
-      };
+      General.InputMethod = "qtvirtualkeyboard";
     };
   };
 
