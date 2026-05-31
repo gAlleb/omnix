@@ -16,7 +16,7 @@
 
   # Drop SSH public keys here later to log in without a password:
   #
-  #   users.users.stefan.openssh.authorizedKeys.keys = [
+  #   users.users.<username>.openssh.authorizedKeys.keys = [
   #     "ssh-ed25519 AAAA... your-key"
   #   ];
 }

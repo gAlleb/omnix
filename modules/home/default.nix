@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, username, ... }:
 {
   imports = [
     ./shell.nix
@@ -13,8 +13,8 @@
     ./mpd.nix
   ];
 
-  home.username = "stefan";
-  home.homeDirectory = "/home/stefan";
+  home.username = username;
+  home.homeDirectory = "/home/${username}";
   home.stateVersion = "25.05";
 
   # home-manager (master) tracks ahead of nixos-unstable by one minor;

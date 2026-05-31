@@ -1,8 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, username, ... }:
 {
-  users.users.stefan = {
+  users.users.${username} = {
     isNormalUser = true;
-    description = "Stefan";
+    description = username;
     extraGroups = [
       "wheel"
       "audio"

@@ -1,8 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, username, ... }:
 let
   # Патчим sddm-astronaut так, чтобы тема смотрела на абсолютный путь
   # вместо своего bundled Backgrounds/astronaut.png. По этому пути системный
-  # systemd-сервис (ниже) будет класть копию ~stefan/.config/bg.jpg перед
+  # systemd-сервис (ниже) будет класть копию ~/.config/bg.jpg перед
   # стартом display-manager.
   sddmBgPath = "/var/lib/sddm/background.jpg";
 
@@ -46,12 +46,12 @@ in
   # сессия (mango) — Wayland; X11 как desktop никто не использует.
   services.xserver.enable = true;
 
-  # Гарантируем что home-manager activation для stefan (включая walFirstRun
-  # — создание ~/.cache/wal/* до первого логина) завершится до запуска
-  # display-manager. Иначе SDDM иногда успевает первее на быстрых VM.
-  # `before` — только ordering, не requirement: если HM упадёт, SDDM
-  # всё равно поднимется (просто позже).
-  systemd.services.home-manager-stefan.before = [ "display-manager.service" ];
+  # Гарантируем что home-manager activation для пользователя (включая
+  # walFirstRun — создание ~/.cache/wal/* до первого логина) завершится
+  # до запуска display-manager. Иначе SDDM иногда успевает первее на
+  # быстрых VM. `before` — только ordering, не requirement: если HM
+  # упадёт, SDDM всё равно поднимется (просто позже).
+  systemd.services."home-manager-${username}".before = [ "display-manager.service" ];
 
   services.displayManager.sddm = {
     enable = true;
@@ -96,19 +96,19 @@ in
     description = "Sync user wallpaper to SDDM background";
     wantedBy = [ "display-manager.service" ];
     before   = [ "display-manager.service" ];
-    # home-manager-stefan.service creates the ~/.config/bg.jpg symlink
+    # home-manager-<user>.service creates the ~/.config/bg.jpg symlink
     # during activation. Without ordering against it, we race and
     # `[ -f "$src" ]` can be false on first boot → /var/lib/sddm/
     # ends up without background.jpg and SDDM has no wallpaper until
     # the next reboot.
-    after = [ "home-manager-stefan.service" ];
-    wants = [ "home-manager-stefan.service" ];
+    after = [ "home-manager-${username}.service" ];
+    wants = [ "home-manager-${username}.service" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = false;
     };
     script = ''
-      src="/home/stefan/.config/bg.jpg"
+      src="/home/${username}/.config/bg.jpg"
       dst="${sddmBgPath}"
       if [ -f "$src" ]; then
         install -Dm644 -o sddm -g sddm "$src" "$dst"
