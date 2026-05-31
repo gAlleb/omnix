@@ -14,4 +14,11 @@
   omnix.profile.laptop = true;
   omnix.profile.intel = true;
   omnix.profile.vm = false;
+
+  # 8 GiB swapfile. Bump to >= installed RAM if you want hibernation,
+  # or shrink if your SSD budget is tight. Created and turned on
+  # automatically on `nixos-rebuild switch`.
+  swapDevices = [
+    { device = "/swapfile"; size = 8192; }   # size in MiB
+  ];
 }
