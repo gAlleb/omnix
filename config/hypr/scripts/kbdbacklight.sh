@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 step=${2:-"10%"}
 mode=$1

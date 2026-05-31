@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if (( $# == 0 )); then
     echo "Use either -g flag to generate palette from wallpaper path or -t to generate palette from theme"

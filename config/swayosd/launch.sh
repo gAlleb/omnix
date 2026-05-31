@@ -1,3 +1,3 @@
-#!/bin/bash
+#!/usr/bin/env bash
 pkill -x swayosd-server
 setsid swayosd-server > /dev/null 2>&1

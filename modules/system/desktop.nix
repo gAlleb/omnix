@@ -69,8 +69,16 @@ in
   environment.systemPackages = [ sddm-astronaut-omnix ];
 
   # /var/lib/sddm существует и доступен sddm — на чтение, нам — на запись.
+  # /etc/{chromium,brave}/policies/managed создаём world-writable, потому что
+  # omnix-theme-set-browser кладёт туда themed color policy.
   systemd.tmpfiles.rules = [
     "d /var/lib/sddm 0755 sddm sddm - -"
+    "d /etc/chromium 0755 root root - -"
+    "d /etc/chromium/policies 0755 root root - -"
+    "d /etc/chromium/policies/managed 0777 root root - -"
+    "d /etc/brave 0755 root root - -"
+    "d /etc/brave/policies 0755 root root - -"
+    "d /etc/brave/policies/managed 0777 root root - -"
   ];
 
   # Перед стартом display-manager копируем актуальные обои пользователя

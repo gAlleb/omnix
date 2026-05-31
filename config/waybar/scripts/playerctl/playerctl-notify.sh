@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Get metadata from playerctl
 ART_URL=$(playerctl metadata mpris:artUrl 2> /dev/null)

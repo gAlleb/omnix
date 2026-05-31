@@ -48,6 +48,9 @@
     foot.terminfo
     rio.terminfo
 
+    # gsettings command for omnix-theme-gnome-set
+    glib
+
     # network / security
     nmap
     # ufw is a frontend for iptables — on NixOS we already enable the

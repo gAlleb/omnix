@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Get metadata from playerctl
 if [ -z "$MUSIC_PLAYING_PLAYERS" ]; then
 	# if MUSIC_PLAYING_PLAYERS is not set, use the default players
