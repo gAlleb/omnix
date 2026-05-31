@@ -98,15 +98,23 @@ in
       fi
     '';
 
-  # First-boot pywal cache:
+  # First-boot pywal cache + first-run flag.
   # waybar/dunst/mako/swaync configs include files from ~/.cache/wal/
   # which is empty until something runs `wal -i <img>`. With no cache,
   # the first mango session has no styled bar, no notifications, etc.
-  # Pre-generate the palette from the default theme's wallpaper.
+  # We:
+  #   1. Pre-generate the palette from the default theme's wallpaper
+  #      so waybar etc. stand up on the first login.
+  #   2. Drop a ~/.local/state/omnix/first-run.mode flag. omnix-cmd-first-run
+  #      (exec-once'd from mango/autostart.conf) sees it and runs the full
+  #      init: omnix-font-set / omnix-init-wallpaper / omnix-theme-set redpeace
+  #      — same flow as the old Void first-run-mode.sh.
   home.activation.walFirstRun =
     lib.hm.dag.entryAfter [ "omnixState" ] ''
       if [ ! -d "$HOME/.cache/wal" ]; then
         ${pkgs.pywal16}/bin/wal -i "$HOME/.config/omnix/current/background" -s -t -e -q || true
+        mkdir -p "$HOME/.local/state/omnix"
+        touch "$HOME/.local/state/omnix/first-run.mode"
       fi
     '';
 }

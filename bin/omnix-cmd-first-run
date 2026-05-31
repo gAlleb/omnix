@@ -11,6 +11,7 @@ if [[ -f "$FIRST_RUN_MODE" ]]; then
   rm -f "$FIRST_RUN_MODE"
   sed -i '/^exec-once=omnix-cmd-first-run\s*$/d' ~/.config/mango/conf/autostart.conf
   omnix-font-set "CaskaydiaMono Nerd Font"
+  omnix-init-wallpaper
   omnix-theme-set redpeace
   #$OMNIX_PATH/install/first-run/battery-monitor.sh
   #$OMNIX_PATH/install/first-run/firewall.sh
