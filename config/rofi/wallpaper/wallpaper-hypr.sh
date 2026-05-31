@@ -66,13 +66,13 @@ executeCommand() {
         gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Light"
         gsettings set org.gnome.desktop.interface color-scheme "prefer-light"
         gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-light"
-        kvantummanager --set WhiteSur-opaque
+        { mkdir -p ~/.config/Kvantum; printf "[General]\ntheme=WhiteSur-opaque\n" > ~/.config/Kvantum/kvantum.kvconfig; }
     else
         wal_flags="-i ${selected_wallpaper}"
         gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark"
         gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
         gsettings set org.gnome.desktop.interface icon-theme "WhiteSur-grey-dark"
-        kvantummanager --set WhiteSur-opaqueDark
+        { mkdir -p ~/.config/Kvantum; printf "[General]\ntheme=WhiteSur-opaqueDark\n" > ~/.config/Kvantum/kvantum.kvconfig; }
     fi
 
     wal -c

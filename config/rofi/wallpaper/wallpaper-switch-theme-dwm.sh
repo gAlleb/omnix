@@ -36,11 +36,11 @@ fi
 local wal_flags=""
 if [ "$mode_choice" = "Light Mode" ]; then
     wal_flags="-l -i ${current_wallpaper}"
-    kvantummanager --set WhiteSur-opaque
+    { mkdir -p ~/.config/Kvantum; printf "[General]\ntheme=WhiteSur-opaque\n" > ~/.config/Kvantum/kvantum.kvconfig; }
     omnix-theme-gnome-set-xorg "WhiteSur-Light" "WhiteSur-light" "0"
 else
     wal_flags="-i ${current_wallpaper}"
-    kvantummanager --set WhiteSur-opaqueDark
+    { mkdir -p ~/.config/Kvantum; printf "[General]\ntheme=WhiteSur-opaqueDark\n" > ~/.config/Kvantum/kvantum.kvconfig; }
     omnix-theme-gnome-set-xorg "WhiteSur-Dark" "WhiteSur-grey-dark" "1"
 fi
 
