@@ -47,7 +47,12 @@ in
 {
   xdg.enable = true;
 
-  xdg.configFile = lib.listToAttrs (map mkSymlinkEntry dotfileDirs);
+  xdg.configFile = lib.listToAttrs (map mkSymlinkEntry dotfileDirs) // {
+    # fontconfig/fonts.conf — отдельным файлом, чтобы home-manager
+    # мог положить свой 10-hm-fonts.conf в conf.d/ рядом.
+    "fontconfig/fonts.conf".source =
+      config.lib.file.mkOutOfStoreSymlink "${repoConfig}/fontconfig/fonts.conf";
+  };
 
   # MPD: храним конфиг в репо, но симлинк ставим вручную в activation,
   # чтобы home-manager не пытался создать свой config из services.mpd.
@@ -59,11 +64,6 @@ in
   # bg.jpg — отдельный файл, не папка.
   home.file.".config/bg.jpg".source =
     config.lib.file.mkOutOfStoreSymlink "${repoConfig}/bg.jpg";
-
-  # fontconfig/fonts.conf — отдельным файлом, чтобы home-manager
-  # мог положить свой 10-hm-fonts.conf в conf.d/.
-  xdg.configFile."fontconfig/fonts.conf".source =
-    config.lib.file.mkOutOfStoreSymlink "${repoConfig}/fontconfig/fonts.conf";
 
   # Applications: .desktop файлы попадают в ~/.local/share/applications/omnix
   # (XDG ищет .desktop рекурсивно). Иконки — отдельным симлинком
