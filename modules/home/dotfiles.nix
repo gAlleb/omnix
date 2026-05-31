@@ -11,7 +11,9 @@ let
     "alacritty"
     "crystal-dock"
     "fastfetch"
-    "fontconfig"
+    # "fontconfig" — не симлинкаем целиком: home-manager сам пишет в
+    # ~/.config/fontconfig/conf.d/10-hm-fonts.conf (из gtk.font.name).
+    # Наш собственный fonts.conf подключаем отдельным файлом ниже.
     "ghostty"
     "kitty"
     # "mako"   — notification daemon not currently installed
@@ -57,6 +59,11 @@ in
   # bg.jpg — отдельный файл, не папка.
   home.file.".config/bg.jpg".source =
     config.lib.file.mkOutOfStoreSymlink "${repoConfig}/bg.jpg";
+
+  # fontconfig/fonts.conf — отдельным файлом, чтобы home-manager
+  # мог положить свой 10-hm-fonts.conf в conf.d/.
+  xdg.configFile."fontconfig/fonts.conf".source =
+    config.lib.file.mkOutOfStoreSymlink "${repoConfig}/fontconfig/fonts.conf";
 
   # Applications: .desktop файлы попадают в ~/.local/share/applications/omnix
   # (XDG ищет .desktop рекурсивно). Иконки — отдельным симлинком
