@@ -49,9 +49,12 @@ in
   # ── dunst ───────────────────────────────────────────────────────────────
   # pkgs.dunst ships its own dunst.service user unit pulled in by
   # default.target. It starts BEFORE mango sets WAYLAND_DISPLAY, so dunst
-  # falls back to X11, can't open a display, and dies. Mask the unit
-  # by symlinking it to /dev/null — mango/autostart.conf launches dunst
-  # via exec-once after `systemctl --user import-environment
+  # falls back to X11, can't open a display, and dies. Override the
+  # unit with an empty file — systemd treats that as a unit with no
+  # ExecStart and refuses to start it. mango/autostart.conf launches
+  # dunst via exec-once after `systemctl --user import-environment
   # WAYLAND_DISPLAY ...` runs.
-  xdg.configFile."systemd/user/dunst.service".source = "/dev/null";
+  # (A direct /dev/null symlink would be cleaner but isn't allowed in
+  # pure-eval flake mode.)
+  xdg.configFile."systemd/user/dunst.service".text = "";
 }
