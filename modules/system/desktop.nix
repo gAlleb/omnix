@@ -96,6 +96,13 @@ in
     description = "Sync user wallpaper to SDDM background";
     wantedBy = [ "display-manager.service" ];
     before   = [ "display-manager.service" ];
+    # home-manager-stefan.service creates the ~/.config/bg.jpg symlink
+    # during activation. Without ordering against it, we race and
+    # `[ -f "$src" ]` can be false on first boot → /var/lib/sddm/
+    # ends up without background.jpg and SDDM has no wallpaper until
+    # the next reboot.
+    after = [ "home-manager-stefan.service" ];
+    wants = [ "home-manager-stefan.service" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = false;
@@ -105,6 +112,9 @@ in
       dst="${sddmBgPath}"
       if [ -f "$src" ]; then
         install -Dm644 -o sddm -g sddm "$src" "$dst"
+        echo "omnix-sddm-background: copied $src -> $dst" >&2
+      else
+        echo "omnix-sddm-background: $src does not exist; skipped" >&2
       fi
     '';
   };
