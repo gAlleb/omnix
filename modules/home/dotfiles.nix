@@ -89,4 +89,16 @@ in
                 "$HOME/.config/omnix/current/background"
       fi
     '';
+
+  # First-boot pywal cache:
+  # waybar/dunst/mako/swaync configs include files from ~/.cache/wal/
+  # which is empty until something runs `wal -i <img>`. With no cache,
+  # the first mango session has no styled bar, no notifications, etc.
+  # Pre-generate the palette from the default theme's wallpaper.
+  home.activation.walFirstRun =
+    lib.hm.dag.entryAfter [ "omnixState" ] ''
+      if [ ! -d "$HOME/.cache/wal" ]; then
+        ${pkgs.pywal16}/bin/wal -i "$HOME/.config/omnix/current/background" -s -t -e -q || true
+      fi
+    '';
 }
