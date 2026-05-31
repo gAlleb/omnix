@@ -38,6 +38,10 @@ in
   # (gtk + wlr, gnome-keyring для секретов).
   programs.mangowc.enable = true;
 
+  # X-сервер нужен только для SDDM greeter в X11-режиме. Пользовательская
+  # сессия (mango) — Wayland; X11 как desktop никто не использует.
+  services.xserver.enable = true;
+
   services.displayManager.sddm = {
     enable = true;
     # SDDM in Wayland mode requires kwin_wayland and stable DRM, which
