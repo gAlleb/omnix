@@ -20,4 +20,12 @@
 
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
+
+  # 4 GiB swapfile. NixOS creates /swapfile on `nixos-rebuild switch`
+  # via systemd-makefs, formats it, and turns swap on automatically.
+  # Eats ~30 s on first rebuild while the file is allocated.
+  # Drop or shrink if the VM has plenty of RAM.
+  swapDevices = [
+    { device = "/swapfile"; size = 4096; }   # size in MiB
+  ];
 }
