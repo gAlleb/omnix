@@ -47,14 +47,24 @@ in
   };
 
   # ── dunst ───────────────────────────────────────────────────────────────
-  # pkgs.dunst ships its own dunst.service user unit pulled in by
-  # default.target. It starts BEFORE mango sets WAYLAND_DISPLAY, so dunst
-  # falls back to X11, can't open a display, and dies. Override the
-  # unit with an empty file — systemd treats that as a unit with no
-  # ExecStart and refuses to start it. mango/autostart.conf launches
-  # dunst via exec-once after `systemctl --user import-environment
-  # WAYLAND_DISPLAY ...` runs.
-  # (A direct /dev/null symlink would be cleaner but isn't allowed in
-  # pure-eval flake mode.)
-  xdg.configFile."systemd/user/dunst.service".text = "";
+  # pkgs.dunst ships dunst.service with WantedBy=default.target, which
+  # makes systemd start it BEFORE mango exports WAYLAND_DISPLAY. dunst
+  # then falls back to X11 and dies.
+  #
+  # Drop a systemd unit drop-in (~/.config/systemd/user/dunst.service.d/
+  # omnix-override.conf) that:
+  #   * clears WantedBy — don't autostart with default.target
+  #   * adds After/PartOf=graphical-session.target — bound to the
+  #     graphical session lifecycle
+  # mango/autostart.conf then runs `systemctl --user start dunst.service`
+  # after import-environment, which brings the service up cleanly with
+  # the right env already in place.
+  xdg.configFile."systemd/user/dunst.service.d/omnix-override.conf".text = ''
+    [Unit]
+    After=graphical-session.target
+    PartOf=graphical-session.target
+
+    [Install]
+    WantedBy=
+  '';
 }
