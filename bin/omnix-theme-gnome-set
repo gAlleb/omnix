@@ -1,14 +1,24 @@
 #!/bin/bash
 
+set_kvantum_theme() {
+  local theme="$1"
+  mkdir -p ~/.config/Kvantum
+  if [[ -f ~/.config/Kvantum/kvantum.kvconfig ]] && grep -q '^theme=' ~/.config/Kvantum/kvantum.kvconfig; then
+    sed -i "s|^theme=.*|theme=${theme}|" ~/.config/Kvantum/kvantum.kvconfig
+  else
+    printf '[General]\ntheme=%s\n' "$theme" > ~/.config/Kvantum/kvantum.kvconfig
+  fi
+}
+
 # Change gnome modes
 if [[ -f ~/.config/omnix/current/theme/light.mode ]]; then
   gsettings set org.gnome.desktop.interface color-scheme "prefer-light"
   gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Light"
-  kvantummanager --set WhiteSur-opaque
+  set_kvantum_theme "WhiteSur-opaque"
 else
   gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
   gsettings set org.gnome.desktop.interface gtk-theme "WhiteSur-Dark"
-  kvantummanager --set WhiteSur-opaqueDark
+  set_kvantum_theme "WhiteSur-opaqueDark"
 fi
 
 # Change gnome icon theme color
