@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # playerctl loop ensures that when a track is skipped in the music player itself, it still updates on bar
 pgrep -f omnix-bar-playerctl-loop >/dev/null 2>&1 || omnix-bar-playerctl-loop >/dev/null 2>&1 &

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # browser and mpv should never display if paused.
 if [ -z "$MUSIC_PLAYING_PLAYERS" ]; then

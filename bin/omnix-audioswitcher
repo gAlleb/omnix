@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # Create a list of sinks with pretty names
 options=$(pactl -f json list sinks | jq -r '.[] | .description')
