@@ -17,6 +17,8 @@
 
 🥭🥭🥭
 
+<img width="800" alt="изображение" src="https://github.com/user-attachments/assets/a73049f9-0952-4c20-be6f-e733f8e5cce2" />
+
 ## Quickstart
 
 ```bash
