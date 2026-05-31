@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #grim -g "$(slurp -d -w 0 -b "#CCCCFF4D")" -t png - | wl-copy -t image/png && wl-paste > ~/Pictures/$(date +%Y%m%d%H%m%S)_grim.png
 
 [[ -f ~/.config/user-dirs.dirs ]] && source ~/.config/user-dirs.dirs

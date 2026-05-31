@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 THEMES_DIR="$HOME/.config/omnix/themes/"
 CURRENT_THEME_LINK="$HOME/.config/omnix/current/theme"

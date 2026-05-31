@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 case "${EDITOR:-nvim}" in
 nvim | vim | nano | micro | hx)

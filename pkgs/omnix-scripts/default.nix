@@ -19,6 +19,9 @@ stdenvNoCC.mkDerivation {
       name=$(basename "$f")
       install -m755 "$f" "$out/bin/$name"
     done
+    # Rewrite #!/bin/bash, #!/bin/sh, #!/usr/bin/env bash etc. to
+    # Nix-store paths so the wrapped scripts work on NixOS.
+    patchShebangs $out/bin
   '';
 
   meta = {

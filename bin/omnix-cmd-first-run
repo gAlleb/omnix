@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export OMNIX_PATH=$HOME/.local/share/omnix
 export PATH=$OMNIX_PATH/bin/:$PATH

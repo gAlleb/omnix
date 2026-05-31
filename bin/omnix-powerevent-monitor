@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script efficiently waits for power events using inotify.
 # It uses zero CPU while idle.

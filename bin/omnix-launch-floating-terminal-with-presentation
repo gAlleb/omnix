@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 cmd="$*"
 exec setsid alacritty -o font.size=11 --class=Omarchy --title=Omvoid -e bash -c "omnix-show-logo; $cmd; omnix-show-done"

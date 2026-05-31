@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # omnix-theme-set: Set a theme, specified by its name.
 # Usage: omarchy-theme-set <theme-name>
