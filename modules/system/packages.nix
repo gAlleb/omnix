@@ -48,8 +48,13 @@
     foot.terminfo
     rio.terminfo
 
-    # gsettings command for omnix-theme-gnome-set
+    # gsettings command + the schemas it needs to actually do anything.
+    # Without gsettings-desktop-schemas `gsettings list-schemas` is
+    # empty and `gsettings set org.gnome.desktop.interface ...` becomes
+    # a silent no-op — omnix-theme-gnome-set looked like it worked but
+    # nautilus / gtk apps never got told to switch theme/icons.
     glib
+    gsettings-desktop-schemas
 
     # network / security
     nmap
