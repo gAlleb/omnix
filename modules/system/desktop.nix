@@ -7,15 +7,19 @@ let
   sddmBgPath = "/var/lib/sddm/background.jpg";
 
   sddm-astronaut-omnix = pkgs.sddm-astronaut.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
+    # postFixup runs from the standard fixupPhase which is always
+    # invoked — even when the package's installPhase doesn't call
+    # `runHook postInstall`. Earlier the same code in `postInstall`
+    # silently never executed on this particular package.
+    postFixup = (old.postFixup or "") + ''
       themesDir="$out/share/sddm/themes/sddm-astronaut-theme/Themes"
       if [ -d "$themesDir" ]; then
-        # Заменяем любую строку `Background="Backgrounds/<...>"` на абсолютный
-        # путь к нашему системному фону. Любая встроенная картинка-вариант
-        # перекрывается одним правилом.
         for f in "$themesDir"/*.conf; do
           sed -i -E 's|^Background=.*$|Background="${sddmBgPath}"|' "$f"
         done
+        echo "[omnix] patched $themesDir/*.conf -> Background=${sddmBgPath}"
+      else
+        echo "[omnix] WARNING: $themesDir not found, sddm-astronaut layout changed?" >&2
       fi
     '';
   });
