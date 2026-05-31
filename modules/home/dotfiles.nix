@@ -11,6 +11,7 @@ let
     "alacritty"
     "crystal-dock"
     "fastfetch"
+    "fontconfig"
     "ghostty"
     "kitty"
     # "mako"   — notification daemon not currently installed
