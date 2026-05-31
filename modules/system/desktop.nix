@@ -46,6 +46,13 @@ in
   # сессия (mango) — Wayland; X11 как desktop никто не использует.
   services.xserver.enable = true;
 
+  # Гарантируем что home-manager activation для stefan (включая walFirstRun
+  # — создание ~/.cache/wal/* до первого логина) завершится до запуска
+  # display-manager. Иначе SDDM иногда успевает первее на быстрых VM.
+  # `before` — только ordering, не requirement: если HM упадёт, SDDM
+  # всё равно поднимется (просто позже).
+  systemd.services.home-manager-stefan.before = [ "display-manager.service" ];
+
   services.displayManager.sddm = {
     enable = true;
     # SDDM in Wayland mode requires kwin_wayland and stable DRM, which
