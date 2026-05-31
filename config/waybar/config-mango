@@ -178,7 +178,7 @@
 
 	"custom/menu": {
 	  	"format": "{icon}",
-  		"format-icons": "",
+  		"format-icons": "",
 	  	"on-click": "omnix-app-menu",
 	  	"escape": true,
   		"tooltip": false
