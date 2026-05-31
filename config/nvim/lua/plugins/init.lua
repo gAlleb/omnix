@@ -4,6 +4,12 @@ return {
 --     lazy = false,
 --  },
   {
+    "Axenide/WallSync",
+    lazy = false,
+    main = "wallsync",
+    opts = {},
+  },
+  {
     "stevearc/conform.nvim",
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
