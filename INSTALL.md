@@ -74,8 +74,8 @@ sudo mount /dev/disk/by-label/nixos /mnt
 ```
 
 For BIOS also set `boot.loader.grub.efiSupport = false;` and
-`boot.loader.grub.device = "/dev/sda";` in the flake later
-(`modules/system/boot.nix`).
+`boot.loader.grub.device = "/dev/sda";` and remove `boot.loader.efi.canTouchEfiVariables = true;` in the flake later
+(`/mnt/etc/nixos/configuration.nix`).
 
 ---
 
