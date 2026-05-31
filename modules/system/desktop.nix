@@ -140,4 +140,15 @@ in
     QT_AUTO_SCREEN_SCALE_FACTOR = "1";
     LIBVA_DRIVER_NAME = lib.mkIf config.omnix.profile.intel "iHD";
   };
+
+  # GSETTINGS_SCHEMA_DIR via environment.variables (writes /etc/environment)
+  # so that EVERY user process — including mango itself and anything it
+  # spawns later (rofi, wallpaper-hypr.sh, ghostty/alacritty terminals,
+  # bin/omnix-theme-* invoked from keybindings) — inherits it.
+  # Without it, gsettings list-schemas returns "No schemas installed"
+  # in shells that don't go through the login-shell path that exports
+  # XDG_DATA_DIRS, and `gsettings set` silently no-ops -> nautilus etc.
+  # don't pick up the theme/icon switch.
+  environment.variables.GSETTINGS_SCHEMA_DIR =
+    "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
 }
