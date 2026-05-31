@@ -37,6 +37,8 @@
     bind
     lm_sensors
     inotify-tools
+    pciutils      # lspci, lspci -k
+    usbutils      # lsusb
 
     # network / security
     nmap
