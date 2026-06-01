@@ -15,6 +15,15 @@
     };
   };
 
+  # Switch the firewall to nftables. `networking.firewall.extraInputRules`
+  # is nftables-only — in iptables (legacy) mode it's silently ignored,
+  # which means both our `iifname "ygg0" drop` and the explicit SSH
+  # accept never apply. With nftables on, the rule order in
+  # extraInputRules is what actually wins.
+  # Docker keeps working: NixOS configures docker to talk to nftables
+  # via the iptables-nft shim automatically.
+  networking.nftables.enable = true;
+
   networking.firewall = {
     enable = true;
 
