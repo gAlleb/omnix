@@ -65,14 +65,34 @@ in
   home.file.".config/bg.jpg".source =
     config.lib.file.mkOutOfStoreSymlink "${repoConfig}/bg.jpg";
 
-  # Applications: .desktop файлы попадают в ~/.local/share/applications/omnix
-  # (XDG ищет .desktop рекурсивно). Иконки — отдельным симлинком
-  # в каноничный путь, чтобы bin/omnix-webapp-install мог добавлять туда новые.
-  home.file.".local/share/applications/omnix".source =
-    config.lib.file.mkOutOfStoreSymlink "${repoRoot}/applications";
-
-  home.file.".local/share/applications/icons".source =
-    config.lib.file.mkOutOfStoreSymlink "${repoRoot}/applications/icons";
+  # Applications:
+  #   * каждый .desktop из applications/ ставим плоско в
+  #     ~/.local/share/applications/<file>.desktop. rofi/walker/etc.
+  #     ищут .desktop НЕ рекурсивно, подпапка `omnix/` им невидима.
+  #   * иконки applications/icons/* кладём в icon-theme location
+  #     (~/.local/share/icons/hicolor/48x48/apps), чтобы Icon=<name>
+  #     резолвилось через XDG icon search path.
+  #   * applications/icons параллельно симлинкаем в
+  #     ~/.local/share/applications/icons тоже — туда omnix-webapp-install
+  #     складывает новые .png по абсолютному пути, и сам прописывает
+  #     этот абсолютный путь в созданные .desktop'ы.
+  # Заменяет старый ручной bin/omnix-refresh-applications, который
+  # делал то же самое cp'ями на каждой инсталляции.
+  xdg.dataFile = (
+    lib.mapAttrs'
+      (name: _:
+        lib.nameValuePair "applications/${name}" {
+          source = config.lib.file.mkOutOfStoreSymlink "${repoRoot}/applications/${name}";
+        })
+      (lib.filterAttrs
+        (n: t: t == "regular" && lib.hasSuffix ".desktop" n)
+        (builtins.readDir ../../applications))
+  ) // {
+    "icons/hicolor/48x48/apps".source =
+      config.lib.file.mkOutOfStoreSymlink "${repoRoot}/applications/icons";
+    "applications/icons".source =
+      config.lib.file.mkOutOfStoreSymlink "${repoRoot}/applications/icons";
+  };
 
   # ~/.config/omnix — состояние тем (мутируется bin/omnix-theme-*).
   #   themes/<theme>   — симлинки на repoRoot/themes/<theme>
