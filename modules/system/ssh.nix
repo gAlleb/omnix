@@ -11,7 +11,13 @@
       PermitRootLogin = "no";
       KbdInteractiveAuthentication = false;
     };
-    openFirewall = true;
+    # openFirewall = true; here would put port 22 into networking.firewall
+    # allowedTCPPorts, and the nixos-fw chain processes those BEFORE
+    # extraInputRules. That means our `iifname "ygg0" drop` rule would
+    # fire too late and SSH would be reachable over yggdrasil.
+    # We open 22 manually in modules/system/networking.nix
+    # (extraInputRules: `tcp dport 22 accept`) AFTER the ygg0 drop.
+    openFirewall = false;
   };
 
   # Drop SSH public keys here later to log in without a password:
