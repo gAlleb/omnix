@@ -14,6 +14,7 @@
     ./docker.nix
     ./services.nix
     ./filesystems.nix
+    #./filesystems-autofs.nix
     ./packages.nix
     ./nix.nix
     ./ssh.nix

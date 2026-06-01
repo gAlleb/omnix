@@ -11,6 +11,7 @@
     ./xdg.nix
     ./photogimp.nix
     ./mpd.nix
+   #./rclone.nix
   ];
 
   home.username = username;
