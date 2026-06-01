@@ -5,7 +5,12 @@
 
   services.yggdrasil = {
     enable = true;
-    persistentKeys = false;
+    # Keys generated once on first start and kept in /var/lib/yggdrasil/.
+    # The yggdrasil address is derived from the public key, so this
+    # gives us a stable address across reboots AND rebuilds.
+    # To rotate manually: delete the persisted state file under
+    # /var/lib/yggdrasil/ and `systemctl restart yggdrasil`.
+    persistentKeys = true;
     settings = {
       IfName = "ygg0";
       IfMTU = 1280;
