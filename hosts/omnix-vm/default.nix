@@ -12,6 +12,7 @@
   omnix.profile.laptop = false;
   omnix.profile.intel = false;
   omnix.profile.vm = true;
+  omnix.profile.extras = false;
 
   # Proxmox VM was provisioned with SeaBIOS / legacy boot; flip this to
   # false (or just remove) if you re-create the VM with OVMF/UEFI.

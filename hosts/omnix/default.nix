@@ -14,6 +14,7 @@
   omnix.profile.laptop = true;
   omnix.profile.intel = true;
   omnix.profile.vm = false;
+  omnix.profile.extras = true;
 
   # 8 GiB swapfile. Bump to >= installed RAM if you want hibernation,
   # or shrink if your SSD budget is tight. Created and turned on

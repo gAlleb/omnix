@@ -15,11 +15,16 @@ Two hosts are defined:
 ## The plan
 
 Install vanilla NixOS from the **minimal ISO** the usual way (partition,
-mount, generate config, edit, `nixos-install`). The base install only
-needs to give us a bootable system with the `stefan` user and network.
-After the first reboot we clone the flake into `~/.local/share/omnix/`
-and `nixos-rebuild switch --flake .#omnix-vm` replaces the vanilla
-config with this one (SDDM + Mango + dotfiles + themes + apps).
+mount, generate config, install). Two helper scripts under `install/`
+take care of the boring parts:
+
+| Step | What | When | Run as |
+|---|---|---|---|
+| `install/phase1-iso.sh` | Asks host / boot / disk / username / timezone / LAN subnet / initial password. Generates `/mnt/etc/nixos/configuration.nix` and saves the answers to `/mnt/etc/omnix-install.env`. | On the install ISO, after partitioning + mount. | `root` (`sudo`) |
+| `install/phase2-system.sh` | Reads `/etc/omnix-install.env`, clones this flake into `~/.local/share/omnix`, copies `hardware-configuration.nix` into the repo, patches the hardcoded username / timezone / LAN subnet, runs `nixos-rebuild boot --flake`. | After first boot, logged in as your user. | your user |
+
+Neither script touches the disk. Partitioning, `nixos-install`, and the
+final reboot are still your call.
 
 ---
 
@@ -73,152 +78,81 @@ sudo mkfs.ext4 -L nixos /dev/sda1
 sudo mount /dev/disk/by-label/nixos /mnt
 ```
 
-For BIOS also set `boot.loader.grub.efiSupport = false;` and
-`boot.loader.grub.device = "/dev/sda";` and remove `boot.loader.efi.canTouchEfiVariables = true;` in the flake later
-(`/mnt/etc/nixos/configuration.nix`).
+---
+
+## 3. Run phase 1
+
+This single command does what steps 3 + 4 of the old README did
+(`nixos-generate-config` and writing a minimal `configuration.nix`):
+
+```sh
+curl -L https://raw.githubusercontent.com/galleb/omvoid/omnix-mango/install/phase1-iso.sh | sudo bash
+```
+
+It asks:
+
+| Question | Default | Notes |
+|---|---|---|
+| Host profile | `omnix-vm` | `omnix` for the real laptop |
+| Boot mode | `uefi` | `bios` for legacy installs |
+| Disk for GRUB | `/dev/sda` | BIOS only |
+| Username | `stefan` | Your account name |
+| Timezone | `Europe/Moscow` | Any `tzdata` zone |
+| LAN subnet | `192.168.1.0/24` | Subnet allowed through the firewall |
+| Heavy extras | `N` | Brave, Chromium, VLC, OBS, Telegram, Audacity, etc. Skip on a tiny VM. |
+| Initial password | — | Hashed with `mkpasswd -m sha-512` |
+
+When it finishes, you get a minimal `configuration.nix` that boots
+into a usable system with `git`, SSH and your user — nothing else.
+The answers also live in `/mnt/etc/omnix-install.env` so phase 2 can
+read them.
+
+The script also offers to run `nixos-install --no-root-passwd` and to
+reboot when it finishes. Answer `y` to both unless something looks off
+in the generated config — there's no separate manual `nixos-install`
+step. (`--no-root-passwd` is fine because your user is in `wheel`.)
 
 ---
 
-## 3. Generate base config
+## 4. First boot → run phase 2
+
+Log in at the TTY as the user you picked. You can keep going at the
+TTY, or SSH in from another machine (easier copy-paste):
 
 ```sh
-sudo nixos-generate-config --root /mnt
-```
-
-Produces:
-- `/mnt/etc/nixos/hardware-configuration.nix` — UUIDs, kernel modules
-  for this exact machine. We don't touch it.
-- `/mnt/etc/nixos/configuration.nix` — base config we edit next.
-
----
-
-## 4. Edit `configuration.nix` for the bare-bones install
-
-Open it:
-
-```sh
-sudo nano /mnt/etc/nixos/configuration.nix
-```
-
-Replace the content with the following. The only goal here is to
-boot, log in as `stefan` with network and `git`. Mango/SDDM/dotfiles
-arrive in step 6.
-
-```nix
-{ config, pkgs, ... }:
-{
-  imports = [ ./hardware-configuration.nix ];
-
-  # Boot loader — match what you set up in step 2.
-  boot.loader.systemd-boot.enable = false;
-  boot.loader.grub = {
-    enable = true;
-    device = "nodev";              # set to "/dev/sda" for BIOS
-    efiSupport = true;             # set to false for BIOS
-    useOSProber = true;
-  };
-  boot.loader.efi.canTouchEfiVariables = true;  # drop for BIOS
-
-  networking.hostName = "omnix-vm";   # or "omnix"
-  networking.networkmanager.enable = true;
-
-  time.timeZone = "Europe/Moscow";
-  i18n.defaultLocale = "en_US.UTF-8";
-  console.keyMap = "us";
-
-  users.users.stefan = {
-    isNormalUser = true;
-    description = "Stefan";
-    extraGroups = [ "wheel" "networkmanager" ];
-    initialPassword = "changeme";    # set a real password after first login
-  };
-
-  # SSH from your host into the VM for the rest of the install.
-  services.openssh = {
-    enable = true;
-    settings.PasswordAuthentication = true;
-    openFirewall = true;
-  };
-
-  # Flakes are required for `nixos-rebuild --flake`.
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  environment.systemPackages = with pkgs; [ git vim ];
-
-  system.stateVersion = "25.05";   # keep whatever the generator put here
-}
-```
-
-Notes:
-- `initialPassword = "changeme"` is plaintext — fine for a bring-up,
-  change with `passwd` after first login. If that's still too gross
-  for you, drop the line and run `nixos-enter --root /mnt -c 'passwd stefan'`
-  after step 5.
-- The hostname here is overridden when the flake takes over, so it's
-  fine to set it to anything.
-
----
-
-## 5. Install
-
-```sh
-sudo nixos-install --no-root-passwd
-sudo reboot
-```
-
-The `--no-root-passwd` flag is fine because `stefan` is in `wheel`
-and that's how we'll do anything `root`-level.
-
----
-
-## 6. First boot → SSH in → clone the flake → take over
-
-Log in at the TTY as `stefan` with the password from step 4
-(`changeme`). Change it and find the IP:
-
-```sh
-passwd
 ip -4 addr show | awk '/inet /{print $2}'
+# from your host:
+ssh <username>@<vm-ip>
 ```
 
-Now you can SSH in from your host machine and continue from there
-(easier copy-paste, real terminal):
+Then:
 
 ```sh
-ssh stefan@<vm-ip>
+curl -L https://raw.githubusercontent.com/galleb/omvoid/omnix-mango/install/phase2-system.sh | bash
 ```
 
-Pull the flake into its real home (the path matters — see "Why this
-exact path" below):
+Phase 2:
+1. Reads `/etc/omnix-install.env` (written by phase 1) for defaults and
+   asks you to confirm host / timezone / LAN subnet — press Enter to
+   keep the values you picked during phase 1, or type a new one.
+2. Persists your answers back to `/etc/omnix-install.env`.
+3. If `~/.local/share/omnix` doesn't exist yet — clones the flake there
+   and patches `flake.nix` (`username`), `modules/system/locale.nix`
+   (`time.timeZone`) and `modules/system/networking.nix` (`ip saddr`
+   in the firewall) with the answers from step 1. If the repo already
+   exists, clone + patches are skipped (the hardcoded strings the
+   patches look for would already be gone).
+4. Copies the real `/etc/nixos/hardware-configuration.nix` into
+   `hosts/<host>/` in the repo, replacing the placeholder.
+5. Runs `sudo nixos-rebuild boot --flake .#<host>`.
+6. Asks whether to reboot now.
 
-```sh
-mkdir -p ~/.local/share
-git clone -b omnix-mango https://github.com/galleb/omvoid.git \
-  ~/.local/share/omnix
-
-# CRITICAL: replace the placeholder hardware-configuration.nix in the
-# repo with the real one that nixos-generate-config wrote for your
-# machine. The repo file is a stub for `nix flake check` only — if
-# left in place, boot will hang waiting for a non-existent partition
-# (the stub assumes a separate /boot which BIOS installs don't have).
-sudo cp /etc/nixos/hardware-configuration.nix \
-  ~/.local/share/omnix/hosts/omnix-vm/hardware-configuration.nix
-sudo chown $USER:users \
-  ~/.local/share/omnix/hosts/omnix-vm/hardware-configuration.nix
-# (use hosts/omnix/ instead of hosts/omnix-vm/ for the real laptop)
-
-cd ~/.local/share/omnix
-sudo nixos-rebuild boot --flake .#omnix-vm     # or .#omnix
-sudo reboot
-```
-
-`nixos-rebuild boot` (rather than `switch`) builds the new generation
-and marks it default for the next boot, without restarting anything
-in the current session. This avoids a known dbus-broker race that
-hangs `switch` indefinitely when user units change inside the
-active login. After `reboot` you'll come up directly in the new
-generation with SDDM + Mango + dotfiles + themes + fonts + omnix-*
-helpers + all the symlinks under `~/.config/`.
+> **Re-running phase 2 with different parameters.** The sed patches in
+> step 3 only fire on a freshly-cloned repo. If you want to change
+> username / timezone / LAN subnet on an already-installed machine,
+> `rm -rf ~/.local/share/omnix` first, then re-run phase 2 — it'll
+> clone fresh and re-apply the patches with whatever you enter at the
+> prompts.
 
 > **Why this exact path?** Home-manager hardcodes
 > `~/.local/share/omnix/` as the target of its `mkOutOfStoreSymlink`
@@ -226,12 +160,18 @@ helpers + all the symlinks under `~/.config/`.
 > `~/.config/` will point at `~/.local/share/omnix/config/*`, so the
 > repo has to live there for them to resolve.
 
+> **Why `nixos-rebuild boot` instead of `switch`?** `boot` stages the
+> new generation for the next boot without restarting anything in the
+> current session. `switch` here can hang on a dbus-broker race when
+> user units change inside the active login. After `reboot` you come
+> up directly in the new generation.
+
 > **Why the explicit hardware-config copy?** Earlier versions of the
-> flake tried to auto-pick `/etc/nixos/hardware-configuration.nix`
-> via `builtins.pathExists`. That doesn't work in flake (sandboxed)
-> evaluation — paths outside the flake aren't visible, so the call
-> always returned `false` and the placeholder won. Explicit copy is
-> the only path that's actually reliable.
+> flake tried to auto-pick `/etc/nixos/hardware-configuration.nix` via
+> `builtins.pathExists`. That doesn't work in pure flake evaluation —
+> paths outside the flake aren't visible, so the call always returned
+> `false` and the placeholder won. Explicit copy is the only reliable
+> path.
 
 If the build hits **`hash mismatch in fixed-output derivation`** in
 `pkgs/sfpro-display/` or `pkgs/photogimp-config/`, copy the
@@ -240,18 +180,15 @@ If the build hits **`hash mismatch in fixed-output derivation`** in
 
 ---
 
-## 7. Reboot
+## 5. Land in MangoWC
 
-```sh
-sudo reboot
-```
-
-You land in SDDM with the astronaut theme. Pick the **MangoWC**
-session, log in.
+After the reboot triggered by phase 2 you get SDDM with the astronaut
+theme. Pick the **MangoWC** session, log in with the password you set
+during phase 1.
 
 ---
 
-## 8. One-time manual bits
+## 6. One-time manual bits
 
 | Task | How |
 |---|---|
@@ -263,7 +200,7 @@ session, log in.
 
 ---
 
-## 9. Day-to-day updates
+## 7. Day-to-day updates
 
 ```sh
 cd ~/.local/share/omnix
@@ -276,7 +213,7 @@ Or pick an older generation from the GRUB menu at boot.
 
 ---
 
-## 10. Known gotchas
+## 8. Known gotchas
 
 - **`sha256 = "00000…"` placeholders in `pkgs/`.** First build will
   fail with `hash mismatch in fixed-output derivation`. Copy the
@@ -289,9 +226,9 @@ Or pick an older generation from the GRUB menu at boot.
 - **Intel iGPU video acceleration not kicking in.** Make sure you used
   the `.#omnix` host (not `.#omnix-vm`) — `omnix.profile.intel = true`
   is what pulls in `intel-media-driver`.
-- **Forgot to enable flakes in step 4 `configuration.nix`.** You'll
-  get `error: experimental Nix feature 'nix-command' is disabled` on
-  the first `nixos-rebuild --flake`. Add the
-  `nix.settings.experimental-features` line, then
-  `sudo nixos-rebuild switch` (without `--flake`) — that picks up the
-  edit, and after that `--flake` works.
+- **Phase 2 says `Cannot read /etc/omnix-install.env`.** Either phase 1
+  didn't run, or you did `nixos-install` from a different `/mnt`. Re-run
+  phase 1 on the actual target root.
+- **Phase 2 says `expects to run as '<x>', not '<y>'`.** You logged in
+  as a different user than the one phase 1 created. Log in as the
+  username you set during phase 1.

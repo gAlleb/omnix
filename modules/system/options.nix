@@ -34,5 +34,17 @@
       default = "/dev/sda";
       description = "Disk to install GRUB on when omnix.profile.bios = true.";
     };
+
+    extras = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Включает тяжёлые опциональные приложения — браузеры (brave,
+        chromium), мессенджеры (telegram-desktop, vesktop, gajim),
+        медиа (vlc, mpv, strawberry, audacity, obs-studio), OCR
+        (tesseract + gimagereader) и прочий софт, который не всегда
+        нужен (особенно на голой тест-ВМ).
+      '';
+    };
   };
 }

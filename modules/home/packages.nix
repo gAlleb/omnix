@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, osConfig, ... }:
 {
   home.packages = with pkgs; [
     # ── Terminals ────────────────────────────────────────────────
@@ -38,31 +38,8 @@
     # config/mango/conf/autostart.conf instead.
     dunst
 
-    # ── Apps ──────────────────────────────────────────────────────
-    brave
-    chromium
-    # Native discord package downloads "full.distro" from
-    # stable.dl2.discordapp.net at build time, which is unreachable
-    # from a lot of Russian networks (RKN blocking). Use vesktop
-    # instead — it talks to Discord via the web client and ships as
-    # a self-contained electron app.
-    vesktop
-    telegram-desktop
+    # ── Apps (core — всегда ставятся) ────────────────────────────
     keepassxc
-    gajim
-    senpai
-    vlc
-    mpv
-    strawberry
-    audacity
-    obs-studio
-    foliate
-    papers
-    transmission_4-gtk
-    filezilla
-    remmina
-    flacon
-    puddletag
     gnome-calculator
     libqalculate
     gimp
@@ -80,8 +57,6 @@
     yazi
     btop
     dust
-    gearlever
-    gimagereader
 
     # ── Theming / tools ──────────────────────────────────────────
     pywal16
@@ -90,7 +65,7 @@
     whitesur-gtk-theme
 
     # ── nwg-* (раньше из кастомного void-repo) ───────────────────
-    nwg-dock-hyprland
+    #nwg-dock-hyprland
     nwg-drawer
     nwg-look
 
@@ -117,7 +92,32 @@
     omnix-scripts
     photogimp-config
     wal-telegram
-  ];
+  ] ++ lib.optionals osConfig.omnix.profile.extras (with pkgs; [
+    # Тяжёлые опциональные приложения. Включаются опцией
+    # `omnix.profile.extras = true;` (см. modules/system/options.nix).
+    # На omnix-vm по дефолту выключены, на реальном omnix — включены.
+    brave
+    chromium
+    vesktop
+    telegram-desktop
+    gajim
+    senpai
+    vlc
+    mpv
+    strawberry
+    audacity
+    obs-studio
+    foliate
+    papers
+    transmission_4-gtk
+    filezilla
+    remmina
+    flacon
+    puddletag
+    gearlever
+    gimagereader
+    tesseract
+  ]);
 
   services.cliphist.enable = true;
 }
