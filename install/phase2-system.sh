@@ -42,13 +42,16 @@ fi
 
 if [ "$USER" != "$EXPECTED_USER" ]; then
   echo "Warning: phase 1 created user '$EXPECTED_USER', but you're logged in as '$USER'." >&2
-  read -rp "Continue with '$USER' anyway? (y/N): " ANS
+  read -rp "Continue with '$USER' anyway? (y/N): " ANS </dev/tty
   [[ "$ANS" =~ ^[Yy]$ ]] || exit 1
 fi
 
+# All `read` calls go to /dev/tty so the script works when piped via
+# `curl … | bash` — without this, read steals stdin from the pipe and
+# eats the next lines of the script itself.
 ask() {
   local prompt="$1" default="$2" var
-  read -rp "$prompt [$default]: " var
+  read -rp "$prompt [$default]: " var </dev/tty
   echo "${var:-$default}"
 }
 
@@ -62,10 +65,10 @@ TIMEZONE=$(ask "Timezone" "$DEFAULT_TIMEZONE")
 LAN_SUBNET=$(ask "LAN subnet allowed through firewall" "$DEFAULT_LAN_SUBNET")
 
 if [ "$DEFAULT_EXTRAS" = "true" ]; then
-  read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (Y/n): " EXTRAS_ANS
+  read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (Y/n): " EXTRAS_ANS </dev/tty
   if [[ "$EXTRAS_ANS" =~ ^[Nn]$ ]]; then EXTRAS=false; else EXTRAS=true; fi
 else
-  read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (y/N): " EXTRAS_ANS
+  read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (y/N): " EXTRAS_ANS </dev/tty
   if [[ "$EXTRAS_ANS" =~ ^[Yy]$ ]]; then EXTRAS=true; else EXTRAS=false; fi
 fi
 
@@ -112,7 +115,7 @@ cd "$REPO"
 sudo nixos-rebuild boot --flake ".#$HOST"
 
 echo
-read -rp "Reboot now? (Y/n): " REBOOT
+read -rp "Reboot now? (Y/n): " REBOOT </dev/tty
 if [[ ! "$REBOOT" =~ ^[Nn]$ ]]; then
   sudo reboot
 fi

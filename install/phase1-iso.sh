@@ -24,9 +24,12 @@ if ! mountpoint -q /mnt; then
   exit 1
 fi
 
+# All `read` calls go to /dev/tty so the script works when piped via
+# `curl … | sudo bash` — without this, read steals stdin from the pipe
+# and eats the next lines of the script itself.
 ask() {
   local prompt="$1" default="$2" var
-  read -rp "$prompt [$default]: " var
+  read -rp "$prompt [$default]: " var </dev/tty
   echo "${var:-$default}"
 }
 
@@ -51,12 +54,12 @@ USERNAME=$(ask "Username" "stefan")
 TIMEZONE=$(ask "Timezone" "Europe/Moscow")
 LAN_SUBNET=$(ask "LAN subnet allowed through firewall" "192.168.1.0/24")
 
-read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (y/N): " EXTRAS_ANS
+read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (y/N): " EXTRAS_ANS </dev/tty
 if [[ "$EXTRAS_ANS" =~ ^[Yy]$ ]]; then EXTRAS=true; else EXTRAS=false; fi
 
 while true; do
-  read -srp "Initial password for $USERNAME: " PW1; echo
-  read -srp "Confirm: " PW2; echo
+  read -srp "Initial password for $USERNAME: " PW1 </dev/tty; echo
+  read -srp "Confirm: " PW2 </dev/tty; echo
   if [ -n "$PW1" ] && [ "$PW1" = "$PW2" ]; then break; fi
   echo "Passwords didn't match (or empty), try again."
 done
@@ -140,11 +143,11 @@ EOF
 chmod 644 /mnt/etc/omnix-install.env
 
 echo
-read -rp "Run 'nixos-install --no-root-passwd' now? (Y/n): " RUN_INSTALL
+read -rp "Run 'nixos-install --no-root-passwd' now? (Y/n): " RUN_INSTALL </dev/tty
 if [[ ! "$RUN_INSTALL" =~ ^[Nn]$ ]]; then
   nixos-install --no-root-passwd
   echo
-  read -rp "Reboot now? (Y/n): " RUN_REBOOT
+  read -rp "Reboot now? (Y/n): " RUN_REBOOT </dev/tty
   if [[ ! "$RUN_REBOOT" =~ ^[Nn]$ ]]; then
     reboot
   fi
