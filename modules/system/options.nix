@@ -1,23 +1,9 @@
 { lib, ... }:
 {
   options.omnix.profile = {
-    laptop = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Включает TLP, udev-правило AC-плага, brightnessctl и прочие батарейные штуки.";
-    };
-
-    intel = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Включает intel-media-driver и микрокод Intel.";
-    };
-
-    vm = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Хост — виртуалка (Proxmox/qemu). Отключает железо-специфичные модули.";
-    };
+    # Hardware drivers (intel, amd, laptop, vm) have moved to
+    # config.drivers.<x>.enable — see modules/drivers/. Profiles in
+    # profiles/<x>/default.nix flip those on.
 
     bios = lib.mkOption {
       type = lib.types.bool;

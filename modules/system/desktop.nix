@@ -125,12 +125,8 @@ in
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
-    extraPackages = lib.mkIf config.omnix.profile.intel (with pkgs; [
-      intel-media-driver
-      intel-vaapi-driver
-      libva-vdpau-driver
-      libvdpau-va-gl
-    ]);
+    # extraPackages: GPU-specific drivers live in modules/drivers/<gpu>.nix
+    # and merge into this attribute via the NixOS module system.
   };
 
   environment.sessionVariables = {
@@ -138,7 +134,7 @@ in
     MOZ_ENABLE_WAYLAND = "1";
     QT_QPA_PLATFORMTHEME = "qt5ct";
     QT_AUTO_SCREEN_SCALE_FACTOR = "1";
-    LIBVA_DRIVER_NAME = lib.mkIf config.omnix.profile.intel "iHD";
+    # LIBVA_DRIVER_NAME is set per-GPU in modules/drivers/<gpu>.nix.
   };
 
   # GSETTINGS_SCHEMA_DIR via environment.variables (writes /etc/environment)

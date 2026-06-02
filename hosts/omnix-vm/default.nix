@@ -12,18 +12,16 @@ in
 
   networking.hostName = "omnix-vm";
 
-  omnix.profile.laptop = false;
-  omnix.profile.intel = false;
-  omnix.profile.vm = true;
+  # VM guest services (qemu-guest-agent, spice) come in via the "vm"
+  # profile this host is mapped to in flake.nix:
+  # profile = "vm" → drivers.vm.enable.
+
   omnix.profile.extras = extras;
 
   # Proxmox VM was provisioned with SeaBIOS / legacy boot; flip this to
   # false (or just remove) if you re-create the VM with OVMF/UEFI.
   omnix.profile.bios = true;
   omnix.profile.biosDevice = "/dev/sda";
-
-  services.qemuGuest.enable = true;
-  services.spice-vdagentd.enable = true;
 
   # 4 GiB swapfile. NixOS creates /swapfile on `nixos-rebuild switch`
   # via systemd-makefs, formats it, and turns swap on automatically.

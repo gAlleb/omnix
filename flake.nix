@@ -23,14 +23,14 @@
       # │ install/phase2-system.sh writes that file on installation.       │
       # │ For a manual fork, edit it directly.                             │
       # │                                                                  │
-      # │ Modules that need a value pull it inline via                     │
-      # │ `import ../../hosts/${hostName}/variables.nix` — see             │
-      # │ modules/system/locale.nix for the pattern. Only `username` is    │
-      # │ extracted here in flake.nix because we need it to build the      │
-      # │ home-manager user attribute key.                                 │
+      # │ Hardware drivers live in modules/drivers/<x>.nix as              │
+      # │ options.drivers.<x>.enable. A profile under profiles/<y>/        │
+      # │ default.nix turns on the right combination and imports the host  │
+      # │ + modules/system + modules/drivers. mkHost just maps a hostName  │
+      # │ to a profile here.                                               │
       # └──────────────────────────────────────────────────────────────────┘
 
-      mkHost = hostName: extraModules: let
+      mkHost = { hostName, profile, extraModules ? [] }: let
         vars = import ./hosts/${hostName}/variables.nix;
       in nixpkgs.lib.nixosSystem {
         inherit system;
@@ -39,9 +39,9 @@
           { nixpkgs.overlays = [ (import ./overlays { inherit inputs; }) ]; }
           { nixpkgs.config.allowUnfree = true; }
 
-          ./hosts/${hostName}
-
-          ./modules/system
+          # Profile pulls in: the host config, modules/system, and
+          # modules/drivers (with the right drivers.<x>.enable flipped on).
+          ./profiles/${profile}
 
           home-manager.nixosModules.home-manager
           {
@@ -55,8 +55,8 @@
       };
     in {
       nixosConfigurations = {
-        omnix = mkHost "omnix" [ ];
-        omnix-vm = mkHost "omnix-vm" [ ];
+        omnix    = mkHost { hostName = "omnix";    profile = "intel-laptop"; };
+        omnix-vm = mkHost { hostName = "omnix-vm"; profile = "vm"; };
       };
 
       packages.${system} = import ./pkgs {

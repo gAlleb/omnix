@@ -10,7 +10,6 @@
     ./bluetooth.nix
     ./desktop.nix
     ./fonts.nix
-    ./power.nix
     ./docker.nix
     ./services.nix
     ./filesystems.nix

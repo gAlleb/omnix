@@ -12,11 +12,10 @@ in
 
   networking.hostName = "omnix";
 
-  # Real laptop profile — enables TLP, intel GPU drivers and udev
-  # power-event rule from modules/system/{power,desktop}.nix.
-  omnix.profile.laptop = true;
-  omnix.profile.intel = true;
-  omnix.profile.vm = false;
+  # Hardware drivers (intel + laptop power-mgmt) are turned on by the
+  # profile this host is mapped to in flake.nix:
+  # profile = "intel-laptop" → drivers.intel.enable + drivers.laptop.enable.
+
   omnix.profile.extras = extras;
 
   # 8 GiB swapfile. Bump to >= installed RAM if you want hibernation,
