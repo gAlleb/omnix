@@ -3,9 +3,12 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    tmux-nerd-font-window-name.url = "github:joshmedeski/tmux-nerd-font-window-name";
     home-manager = {
       url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    tmux-nerd-font-window-name = {
+      url = "github:joshmedeski/tmux-nerd-font-window-name";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
