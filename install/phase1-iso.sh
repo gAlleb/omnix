@@ -57,6 +57,9 @@ LAN_SUBNET=$(ask "LAN subnet allowed through firewall" "192.168.1.0/24")
 read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (y/N): " EXTRAS_ANS </dev/tty
 if [[ "$EXTRAS_ANS" =~ ^[Yy]$ ]]; then EXTRAS=true; else EXTRAS=false; fi
 
+FULL_NAME=$(ask "Full name for git commits" "$USERNAME")
+EMAIL=$(ask "Email for git commits" "$USERNAME@$HOST")
+
 while true; do
   read -srp "Initial password for $USERNAME: " PW1 </dev/tty; echo
   read -srp "Confirm: " PW2 </dev/tty; echo
@@ -139,6 +142,8 @@ OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET
 OMNIX_EXTRAS=$EXTRAS
+OMNIX_FULL_NAME=$FULL_NAME
+OMNIX_EMAIL=$EMAIL
 EOF
 chmod 644 /mnt/etc/omnix-install.env
 

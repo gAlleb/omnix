@@ -3,21 +3,22 @@
 # omnix install — phase 2 (runs after first boot, as your user).
 #
 # Reads /etc/omnix-install.env (written by phase 1) for defaults and asks
-# you to confirm host / timezone / LAN subnet. Then:
+# you to confirm host / timezone / LAN subnet / extras / git persona.
+# Then:
 #
 #   - If ~/.local/share/omnix doesn't exist: clones the flake there and
-#     patches `username`, `time.timeZone` and the LAN subnet rule with
-#     your answers.
-#   - If it does exist: skips clone + patches (the hardcoded strings the
-#     patches look for would already be gone) and runs rebuild against
-#     the current repo state.
+#     writes hosts/$HOST/variables.nix with the answers (this is the
+#     single file the repo reads all bootstrap values from).
+#   - If it does exist: skips clone + variables.nix write (the file
+#     has likely already been customised) and runs rebuild against the
+#     current repo state.
 #
 # Either way it copies the real /etc/nixos/hardware-configuration.nix
 # into the repo, persists your answers back to /etc/omnix-install.env,
 # runs `nixos-rebuild boot --flake .#$HOST`, and offers to reboot.
 #
-# To re-apply patches with new values: `rm -rf ~/.local/share/omnix` and
-# run this script again.
+# To re-apply with new values: `rm -rf ~/.local/share/omnix` and run
+# this script again.
 #
 set -euo pipefail
 
@@ -28,6 +29,8 @@ DEFAULT_HOST=omnix-vm
 DEFAULT_TIMEZONE="Europe/Moscow"
 DEFAULT_LAN_SUBNET=192.168.1.0/24
 DEFAULT_EXTRAS=false
+DEFAULT_FULL_NAME=""
+DEFAULT_EMAIL=""
 EXPECTED_USER=$USER
 
 if [ -r "$ENV_FILE" ]; then
@@ -37,8 +40,15 @@ if [ -r "$ENV_FILE" ]; then
   DEFAULT_TIMEZONE=${OMNIX_TIMEZONE:-$DEFAULT_TIMEZONE}
   DEFAULT_LAN_SUBNET=${OMNIX_LAN_SUBNET:-$DEFAULT_LAN_SUBNET}
   DEFAULT_EXTRAS=${OMNIX_EXTRAS:-$DEFAULT_EXTRAS}
+  DEFAULT_FULL_NAME=${OMNIX_FULL_NAME:-$DEFAULT_FULL_NAME}
+  DEFAULT_EMAIL=${OMNIX_EMAIL:-$DEFAULT_EMAIL}
   EXPECTED_USER=${OMNIX_USERNAME:-$USER}
 fi
+
+# Fallbacks if env file didn't carry them (e.g. phase1 was run before
+# this commit landed)
+: "${DEFAULT_FULL_NAME:=$USER}"
+: "${DEFAULT_EMAIL:=$USER@$DEFAULT_HOST}"
 
 if [ "$USER" != "$EXPECTED_USER" ]; then
   echo "Warning: phase 1 created user '$EXPECTED_USER', but you're logged in as '$USER'." >&2
@@ -72,6 +82,9 @@ else
   if [[ "$EXTRAS_ANS" =~ ^[Yy]$ ]]; then EXTRAS=true; else EXTRAS=false; fi
 fi
 
+FULL_NAME=$(ask "Full name for git commits" "$DEFAULT_FULL_NAME")
+EMAIL=$(ask "Email for git commits" "$DEFAULT_EMAIL")
+
 USERNAME=$USER
 
 echo "==> Persisting answers to $ENV_FILE"
@@ -81,6 +94,8 @@ OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET
 OMNIX_EXTRAS=$EXTRAS
+OMNIX_FULL_NAME=$FULL_NAME
+OMNIX_EMAIL=$EMAIL
 EOF
 sudo chmod 644 "$ENV_FILE"
 
@@ -91,18 +106,21 @@ if [ ! -d "$REPO" ]; then
   mkdir -p "$HOME/.local/share"
   git clone -b omnix-mango https://github.com/galleb/omvoid.git "$REPO"
 
-  echo "==> Patching hardcoded values in the repo"
-  sed -i "s|username = \"stefan\";|username = \"$USERNAME\";|" \
-    "$REPO/flake.nix"
-  sed -i "s|time.timeZone = \"Europe/Moscow\";|time.timeZone = \"$TIMEZONE\";|" \
-    "$REPO/modules/system/locale.nix"
-  sed -i "s|ip saddr 192.168.1.0/24 accept|ip saddr $LAN_SUBNET accept|" \
-    "$REPO/modules/system/networking.nix"
-  sed -i -E "s|omnix\.profile\.extras = (true\|false);|omnix.profile.extras = $EXTRAS;|" \
-    "$REPO/hosts/$HOST/default.nix"
+  echo "==> Writing $REPO/hosts/$HOST/variables.nix"
+  cat > "$REPO/hosts/$HOST/variables.nix" <<EOF
+{
+  username  = "$USERNAME";
+  timeZone  = "$TIMEZONE";
+  lanSubnet = "$LAN_SUBNET";
+  extras    = $EXTRAS;
+
+  fullName  = "$FULL_NAME";
+  email     = "$EMAIL";
+}
+EOF
 else
-  echo "==> $REPO already exists — skipping clone and sed patches."
-  echo "    (To re-apply patches with new values, 'rm -rf $REPO' first.)"
+  echo "==> $REPO already exists — skipping clone and variables.nix write."
+  echo "    (To re-apply with new values, 'rm -rf $REPO' first.)"
 fi
 
 echo "==> Copying /etc/nixos/hardware-configuration.nix into the repo"
