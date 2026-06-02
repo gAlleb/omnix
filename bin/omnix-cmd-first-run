@@ -6,6 +6,7 @@ export PATH=$OMNIX_PATH/bin/:$PATH
 set -e  
 
 FIRST_RUN_MODE=~/.local/state/omnix/first-run.mode
+ICON_DIR="$HOME/.local/share/applications/icons"
 
 if [[ -f "$FIRST_RUN_MODE" ]]; then
   rm -f "$FIRST_RUN_MODE"
@@ -13,6 +14,11 @@ if [[ -f "$FIRST_RUN_MODE" ]]; then
   omnix-font-set "CaskaydiaMono Nerd Font"
   omnix-init-wallpaper
   omnix-theme-set redpeace
-  #$OMNIX_PATH/install/first-run/battery-monitor.sh
-  #$OMNIX_PATH/install/first-run/firewall.sh
+  omnix-webapp-install "omFM" https://omfm.ru/ omFM.png
+  omnix-webapp-install "WhatsApp" https://web.whatsapp.com/ WhatsApp.png
+  omnix-webapp-install "AIstudio" https://aistudio.google.com/ AIstudio.png
+  omnix-webapp-install "YouTube" https://youtube.com/ YouTube.png
+  omnix-webapp-install "GitHub" https://github.com/ GitHub.png
+  omnix-webapp-install "ClaudeAI" https://claude.ai/ ClaudeAI.png
+  omnix-tui-install "Disk Usage" "bash -c 'dust -r; read -n 1 -s'" float "$ICON_DIR/Disk Usage.png"
 fi
