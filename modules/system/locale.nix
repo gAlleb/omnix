@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, hostName, ... }:
+let
+  inherit (import ../../hosts/${hostName}/variables.nix) timeZone;
+in
 {
-  time.timeZone = "Europe/Moscow";
+  time.timeZone = timeZone;
 
   # Main locale — английский (системные сообщения, man-страницы, UI),
   # форматы (время/числа/валюта/измерения) — русские.

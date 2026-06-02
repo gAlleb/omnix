@@ -1,4 +1,7 @@
 { config, lib, pkgs, ... }:
+let
+  inherit (import ./variables.nix) extras;
+in
 {
   imports = [
     # Replaced at install time by a copy of
@@ -14,7 +17,7 @@
   omnix.profile.laptop = true;
   omnix.profile.intel = true;
   omnix.profile.vm = false;
-  omnix.profile.extras = true;
+  omnix.profile.extras = extras;
 
   # 8 GiB swapfile. Bump to >= installed RAM if you want hibernation,
   # or shrink if your SSD budget is tight. Created and turned on

@@ -1,4 +1,7 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, hostName, ... }:
+let
+  inherit (import ../../hosts/${hostName}/variables.nix) lanSubnet;
+in
 {
   networking.networkmanager.enable = true;
   programs.nm-applet.enable = true;
@@ -37,7 +40,7 @@
 
     extraInputRules = ''
       iifname "ygg0" drop
-      ip saddr 192.168.1.0/24 accept
+      ip saddr ${lanSubnet} accept
       tcp dport 22 accept
     '';
   };

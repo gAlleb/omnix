@@ -1,4 +1,7 @@
 { config, lib, pkgs, ... }:
+let
+  inherit (import ./variables.nix) extras;
+in
 {
   imports = [
     # Replaced at install time by a copy of
@@ -12,7 +15,7 @@
   omnix.profile.laptop = false;
   omnix.profile.intel = false;
   omnix.profile.vm = true;
-  omnix.profile.extras = false;
+  omnix.profile.extras = extras;
 
   # Proxmox VM was provisioned with SeaBIOS / legacy boot; flip this to
   # false (or just remove) if you re-create the VM with OVMF/UEFI.

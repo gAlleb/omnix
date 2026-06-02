@@ -1,4 +1,7 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, hostName, ... }:
+let
+  inherit (import ../../hosts/${hostName}/variables.nix) fullName email;
+in
 {
   programs.git = {
     enable = true;
@@ -7,8 +10,8 @@
     # aliases/extraConfig) are deprecated in favour of programs.git.settings.
     settings = {
       user = {
-        name = "galleb";
-        email = "s@omfm.ru";
+        name = fullName;
+        inherit email;
       };
 
       alias = {
