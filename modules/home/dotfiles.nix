@@ -52,6 +52,12 @@ in
     # мог положить свой 10-hm-fonts.conf в conf.d/ рядом.
     "fontconfig/fonts.conf".source =
       config.lib.file.mkOutOfStoreSymlink "${repoConfig}/fontconfig/fonts.conf";
+
+    # tmux/tmux-nerd-font-window-name.yml — отдельным файлом, потому что
+    # папка ~/.config/tmux/ управляется home-manager (programs.tmux),
+    # симлинк целой директории туда поставить нельзя.
+    "tmux/tmux-nerd-font-window-name.yml".source =
+      config.lib.file.mkOutOfStoreSymlink "${repoConfig}/tmux/tmux-nerd-font-window-name.yml";
   };
 
   # MPD: храним конфиг в репо, но симлинк ставим вручную в activation,
