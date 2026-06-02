@@ -10,6 +10,15 @@ Two hosts are defined:
 | `.#omnix-vm` | Proxmox / QEMU VM. No TLP, no intel-media-driver, ships `qemu-guest-agent`. |
 | `.#omnix`    | Real laptop. TLP, intel-media-driver, udev power-event rule. |
 
+How a host gets its drivers: `flake.nix` `mkHost` maps a hostName to a
+profile name (`omnix → intel-laptop`, `omnix-vm → vm`). Each profile
+under `profiles/<x>/default.nix` imports the host config, `modules/system`,
+and `modules/drivers`, then flips on the right
+`drivers.{intel,amd,laptop,vm}.enable` flags. To add an AMD host
+later: create `hosts/omnix-amd/`, create `profiles/amd-laptop/` (with
+`drivers.amd.enable = true; drivers.laptop.enable = true;`), and add
+one line to `nixosConfigurations` in `flake.nix`.
+
 ---
 
 ## The plan
@@ -20,8 +29,8 @@ take care of the boring parts:
 
 | Step | What | When | Run as |
 |---|---|---|---|
-| `install/phase1-iso.sh` | Asks host / boot / disk / username / timezone / LAN subnet / initial password. Generates `/mnt/etc/nixos/configuration.nix` and saves the answers to `/mnt/etc/omnix-install.env`. | On the install ISO, after partitioning + mount. | `root` (`sudo`) |
-| `install/phase2-system.sh` | Reads `/etc/omnix-install.env`, clones this flake into `~/.local/share/omnix`, copies `hardware-configuration.nix` into the repo, patches the hardcoded username / timezone / LAN subnet, runs `nixos-rebuild boot --flake`. | After first boot, logged in as your user. | your user |
+| `install/phase1-iso.sh` | Asks host / boot / disk / username / timezone / LAN subnet / extras / git persona / initial password. Generates `/mnt/etc/nixos/configuration.nix` and saves the answers to `/mnt/etc/omnix-install.env`. | On the install ISO, after partitioning + mount. | `root` (`sudo`) |
+| `install/phase2-system.sh` | Reads `/etc/omnix-install.env`, clones this flake into `~/.local/share/omnix`, copies `hardware-configuration.nix` into the repo, writes `hosts/<host>/variables.nix` with the answers, runs `nixos-rebuild boot --flake`. | After first boot, logged in as your user. | your user |
 
 Neither script touches the disk. Partitioning, `nixos-install`, and the
 final reboot are still your call.
@@ -224,8 +233,10 @@ Or pick an older generation from the GRUB menu at boot.
   rebuild finished cleanly, then restart SDDM:
   `systemctl restart display-manager`.
 - **Intel iGPU video acceleration not kicking in.** Make sure you used
-  the `.#omnix` host (not `.#omnix-vm`) — `omnix.profile.intel = true`
-  is what pulls in `intel-media-driver`.
+  the `.#omnix` host (not `.#omnix-vm`) — `omnix` maps to the
+  `intel-laptop` profile in `flake.nix`, which flips on
+  `drivers.intel.enable = true` (defined in `modules/drivers/intel.nix`)
+  and that's what pulls in `intel-media-driver` + `LIBVA_DRIVER_NAME=iHD`.
 - **Phase 2 says `Cannot read /etc/omnix-install.env`.** Either phase 1
   didn't run, or you did `nixos-install` from a different `/mnt`. Re-run
   phase 1 on the actual target root.
