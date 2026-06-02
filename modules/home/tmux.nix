@@ -8,7 +8,7 @@
 
     plugins = [
       pkgs.tmuxPlugins.urlview
-      inputs.tmux-nerd-font-window-name.packages.${pkgs.system}.default
+      inputs.tmux-nerd-font-window-name.packages.${pkgs.stdenv.hostPlatform.system}.default
     ];
 
     extraConfig = ''
