@@ -1,8 +1,8 @@
 {
-  username  = "stefan";
+  username  = "user";
   timeZone  = "Europe/Moscow";
   lanSubnet = "192.168.1.0/24";
-  extras    = true;
+  extras    = false;
 
   profile   = "amd-laptop";
 
@@ -11,6 +11,6 @@
 
   swapSize = 8192;
 
-  fullName  = "stefan";
-  email     = "stefan@localhost";
+  fullName  = "user";
+  email     = "user@localhost";
 }

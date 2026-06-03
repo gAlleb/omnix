@@ -3,10 +3,10 @@
   # Если форкаешь репо: эти значения — дефолты, под которые исходно
   # был собран репо. После установки на машине пользователя phase2
   # перезапишет файл новыми ответами.
-  username  = "stefan";
+  username  = "user";
   timeZone  = "Europe/Moscow";
   lanSubnet = "192.168.1.0/24";
-  extras    = true;
+  extras    = false;
 
   profile   = "intel-laptop";
 
@@ -17,6 +17,6 @@
   # Swap file size in MiB. 8 GiB lets hibernation work on most setups.
   swapSize = 8192;
 
-  fullName  = "galleb";
-  email     = "s@omfm.ru";
+  fullName  = "user";
+  email     = "user@localhost";
 }
