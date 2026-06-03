@@ -33,7 +33,42 @@ ask() {
   echo "${var:-$default}"
 }
 
-cat <<'EOF'
+# Auto-detect GPU + form factor to suggest the right default host.
+# GPU detection uses lspci (in pciutils, present on the minimal ISO).
+# Form-factor uses battery presence as the primary signal, with DMI
+# chassis_type as a fallback for odd hardware.
+DETECTED_GPU=unknown
+if command -v lspci >/dev/null 2>&1; then
+  if   lspci 2>/dev/null | grep -qiE 'virtio.*(display|vga)|vmware|qemu'; then
+    DETECTED_GPU=vm
+  elif lspci 2>/dev/null | grep -qiE '(vga|3d).*intel'; then
+    DETECTED_GPU=intel
+  elif lspci 2>/dev/null | grep -qiE '(vga|3d).*(amd|ati|advanced micro)'; then
+    DETECTED_GPU=amd
+  fi
+fi
+
+DETECTED_FORM=desktop
+if [ -d /sys/class/power_supply/BAT0 ] || [ -d /sys/class/power_supply/BAT1 ]; then
+  DETECTED_FORM=laptop
+elif [ -r /sys/class/dmi/id/chassis_type ]; then
+  # 9/10/14 = laptop, notebook, sub-notebook
+  case "$(cat /sys/class/dmi/id/chassis_type)" in
+    9|10|14) DETECTED_FORM=laptop ;;
+  esac
+fi
+
+case "$DETECTED_GPU" in
+  vm)    DETECTED_HOST=omnix-vm ;;
+  intel) DETECTED_HOST=omnix-intel-$DETECTED_FORM ;;
+  amd)   DETECTED_HOST=omnix-amd-$DETECTED_FORM ;;
+  *)     DETECTED_HOST=omnix-vm ;;
+esac
+
+cat <<EOF
+
+Detected: GPU=$DETECTED_GPU, form=$DETECTED_FORM → suggested host: $DETECTED_HOST
+
 Available default hosts:
   omnix-vm              — Proxmox / QEMU virtual machine
   omnix-intel-laptop    — Intel iGPU laptop (TLP, brightness)
@@ -41,7 +76,7 @@ Available default hosts:
   omnix-amd-laptop      — AMD GPU laptop (TLP, brightness)
   omnix-amd-desktop     — AMD GPU desktop
 EOF
-HOST=$(ask "Host profile" "omnix-vm")
+HOST=$(ask "Host profile" "$DETECTED_HOST")
 case "$HOST" in
   omnix-vm|omnix-intel-laptop|omnix-intel-desktop|omnix-amd-laptop|omnix-amd-desktop) ;;
   *) echo "Unknown host: $HOST" >&2
