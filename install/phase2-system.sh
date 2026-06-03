@@ -27,8 +27,6 @@ ENV_FILE=/etc/omnix-install.env
 # Defaults, possibly overridden by env file
 DEFAULT_HOST=omnix-vm
 DEFAULT_PROFILE=vm
-DEFAULT_BOOT_MODE=uefi
-DEFAULT_BIOS_DEVICE=/dev/sda
 DEFAULT_SWAP_SIZE=8192
 DEFAULT_TIMEZONE="Europe/Moscow"
 DEFAULT_LAN_SUBNET=192.168.1.0/24
@@ -42,8 +40,6 @@ if [ -r "$ENV_FILE" ]; then
   . "$ENV_FILE"
   DEFAULT_HOST=${OMNIX_HOST:-$DEFAULT_HOST}
   DEFAULT_PROFILE=${OMNIX_PROFILE:-$DEFAULT_PROFILE}
-  DEFAULT_BOOT_MODE=${OMNIX_BOOT_MODE:-$DEFAULT_BOOT_MODE}
-  DEFAULT_BIOS_DEVICE=${OMNIX_BIOS_DEVICE:-$DEFAULT_BIOS_DEVICE}
   DEFAULT_SWAP_SIZE=${OMNIX_SWAP_SIZE:-$DEFAULT_SWAP_SIZE}
   DEFAULT_TIMEZONE=${OMNIX_TIMEZONE:-$DEFAULT_TIMEZONE}
   DEFAULT_LAN_SUBNET=${OMNIX_LAN_SUBNET:-$DEFAULT_LAN_SUBNET}
@@ -51,14 +47,13 @@ if [ -r "$ENV_FILE" ]; then
   DEFAULT_FULL_NAME=${OMNIX_FULL_NAME:-$DEFAULT_FULL_NAME}
   DEFAULT_EMAIL=${OMNIX_EMAIL:-$DEFAULT_EMAIL}
   EXPECTED_USER=${OMNIX_USERNAME:-$USER}
+  # OMNIX_BOOT_MODE / OMNIX_BIOS_DEVICE are used later, not asked here.
 fi
 
 # Fallbacks if env file didn't carry them (e.g. phase1 was run before
 # this commit landed)
 : "${DEFAULT_FULL_NAME:=$USER}"
 : "${DEFAULT_EMAIL:=$USER@$DEFAULT_HOST}"
-# BIOS_DEVICE only matters when bootMode = bios; harmless otherwise.
-[ -n "$DEFAULT_BIOS_DEVICE" ] || DEFAULT_BIOS_DEVICE=/dev/sda
 
 if [ "$USER" != "$EXPECTED_USER" ]; then
   echo "Warning: phase 1 created user '$EXPECTED_USER', but you're logged in as '$USER'." >&2
@@ -100,16 +95,33 @@ case "$HOST" in
     ;;
 esac
 
-BOOT_MODE=$(ask "Boot mode (uefi | bios)" "$DEFAULT_BOOT_MODE")
-case "$BOOT_MODE" in
-  uefi|bios) ;;
-  *) echo "Unknown boot mode: $BOOT_MODE" >&2; exit 1 ;;
-esac
-
-if [ "$BOOT_MODE" = "bios" ]; then
-  BIOS_DEVICE=$(ask "Disk for GRUB" "$DEFAULT_BIOS_DEVICE")
+# Boot mode and biosDevice are NOT asked here.
+#  - In the typical phase1 → install → phase2 flow they come from
+#    /etc/omnix-install.env (phase1 set them).
+#  - If env is missing (user cloned the repo onto an already-running
+#    system that wasn't installed via phase1) we detect bootMode from
+#    /sys/firmware/efi/efivars — its mere existence is authoritative
+#    proof that the kernel booted UEFI. biosDevice falls back to
+#    /dev/sda; the user can edit hosts/<host>/variables.nix later.
+#
+# Why not ask? Because by phase2 time the bootloader is already on
+# the disk. Letting the user "change" bootMode in a prompt would just
+# write a wrong value into variables.nix and break the next rebuild.
+if [ -n "${OMNIX_BOOT_MODE:-}" ]; then
+  BOOT_MODE=$OMNIX_BOOT_MODE
 else
-  BIOS_DEVICE=$DEFAULT_BIOS_DEVICE   # carried through but unused
+  if [ -d /sys/firmware/efi/efivars ]; then
+    BOOT_MODE=uefi
+  else
+    BOOT_MODE=bios
+  fi
+  echo "==> Detected boot mode: $BOOT_MODE (no /etc/omnix-install.env)"
+fi
+
+BIOS_DEVICE=${OMNIX_BIOS_DEVICE:-}
+[ -n "$BIOS_DEVICE" ] || BIOS_DEVICE=/dev/sda
+if [ "$BOOT_MODE" = "bios" ] && [ -z "${OMNIX_BIOS_DEVICE:-}" ]; then
+  echo "==> Assuming biosDevice = $BIOS_DEVICE — edit hosts/$HOST/variables.nix if your GRUB disk is different."
 fi
 
 SWAP_SIZE=$(ask "Swap size in MiB" "$DEFAULT_SWAP_SIZE")
