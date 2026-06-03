@@ -219,6 +219,16 @@ sudo cp /etc/nixos/hardware-configuration.nix \
   "$REPO/hosts/$HOST/hardware-configuration.nix"
 sudo chown "$USER:users" "$REPO/hosts/$HOST/hardware-configuration.nix"
 
+# Stage hosts/$HOST/ so that 'nixos-rebuild --flake' sees the new
+# files. git+file:// flake sources copy only tracked files into the
+# Nix store; untracked files are invisible. Without this the freshly
+# created hosts/<custom>/ directory wouldn't show up in
+# builtins.readDir ./hosts inside flake.nix, and nixosConfigurations
+# wouldn't include the new host. 'git add' doesn't need a user
+# identity (commit does, add doesn't).
+echo "==> Staging hosts/$HOST/ for the flake evaluation"
+git -C "$REPO" add "hosts/$HOST/" 2>/dev/null || true
+
 echo "==> Running nixos-rebuild boot --flake .#$HOST"
 cd "$REPO"
 sudo nixos-rebuild boot --flake ".#$HOST"
