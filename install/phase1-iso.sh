@@ -69,19 +69,42 @@ cat <<EOF
 
 Detected: GPU=$DETECTED_GPU, form=$DETECTED_FORM → suggested host: $DETECTED_HOST
 
-Available default hosts:
+Pick one of the default hosts (recommended), or type any other name
+to create a CUSTOM host — phase2 will then copy the appropriate
+default host as a template and rename it.
+
+Default hosts:
   omnix-vm              — Proxmox / QEMU virtual machine
   omnix-intel-laptop    — Intel iGPU laptop (TLP, brightness)
   omnix-intel-desktop   — Intel iGPU desktop
   omnix-amd-laptop      — AMD GPU laptop (TLP, brightness)
   omnix-amd-desktop     — AMD GPU desktop
 EOF
-HOST=$(ask "Host profile" "$DETECTED_HOST")
+HOST=$(ask "Host name" "$DETECTED_HOST")
+
+# Validate hostname (Linux/Nix-attr-friendly)
+if [[ ! "$HOST" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+  echo "Invalid host name '$HOST' — use lowercase letters, digits and hyphens only." >&2
+  exit 1
+fi
+
 case "$HOST" in
-  omnix-vm|omnix-intel-laptop|omnix-intel-desktop|omnix-amd-laptop|omnix-amd-desktop) ;;
-  *) echo "Unknown host: $HOST" >&2
-     echo "(Custom hosts will be supported in a follow-up — for now pick one of the above.)" >&2
-     exit 1 ;;
+  omnix-vm|omnix-intel-laptop|omnix-intel-desktop|omnix-amd-laptop|omnix-amd-desktop)
+    # Default host — profile name is derived by stripping the "omnix-" prefix.
+    PROFILE="${HOST#omnix-}"
+    ;;
+  *)
+    # Custom host — ask which profile (drivers + system stack) to base it on.
+    DEFAULT_PROFILE=${DETECTED_HOST#omnix-}
+    echo ""
+    echo "Custom host '$HOST'. Which hardware profile should it use?"
+    echo "  vm | intel-laptop | intel-desktop | amd-laptop | amd-desktop"
+    PROFILE=$(ask "Profile" "$DEFAULT_PROFILE")
+    case "$PROFILE" in
+      vm|intel-laptop|intel-desktop|amd-laptop|amd-desktop) ;;
+      *) echo "Unknown profile: $PROFILE" >&2; exit 1 ;;
+    esac
+    ;;
 esac
 
 BOOT=$(ask "Boot mode (uefi | bios)" "uefi")
@@ -183,6 +206,7 @@ EOF
 echo "==> Writing /mnt/etc/omnix-install.env (for phase 2)"
 cat > /mnt/etc/omnix-install.env <<EOF
 OMNIX_HOST=$HOST
+OMNIX_PROFILE=$PROFILE
 OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET

@@ -26,6 +26,7 @@ ENV_FILE=/etc/omnix-install.env
 
 # Defaults, possibly overridden by env file
 DEFAULT_HOST=omnix-vm
+DEFAULT_PROFILE=vm
 DEFAULT_TIMEZONE="Europe/Moscow"
 DEFAULT_LAN_SUBNET=192.168.1.0/24
 DEFAULT_EXTRAS=false
@@ -37,6 +38,7 @@ if [ -r "$ENV_FILE" ]; then
   # shellcheck disable=SC1090
   . "$ENV_FILE"
   DEFAULT_HOST=${OMNIX_HOST:-$DEFAULT_HOST}
+  DEFAULT_PROFILE=${OMNIX_PROFILE:-$DEFAULT_PROFILE}
   DEFAULT_TIMEZONE=${OMNIX_TIMEZONE:-$DEFAULT_TIMEZONE}
   DEFAULT_LAN_SUBNET=${OMNIX_LAN_SUBNET:-$DEFAULT_LAN_SUBNET}
   DEFAULT_EXTRAS=${OMNIX_EXTRAS:-$DEFAULT_EXTRAS}
@@ -65,10 +67,29 @@ ask() {
   echo "${var:-$default}"
 }
 
-HOST=$(ask "Host profile (omnix-vm | omnix)" "$DEFAULT_HOST")
+HOST=$(ask "Host name" "$DEFAULT_HOST")
+
+if [[ ! "$HOST" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+  echo "Invalid host name '$HOST' — use lowercase letters, digits and hyphens only." >&2
+  exit 1
+fi
+
 case "$HOST" in
-  omnix|omnix-vm) ;;
-  *) echo "Unknown host: $HOST" >&2; exit 1 ;;
+  omnix-vm|omnix-intel-laptop|omnix-intel-desktop|omnix-amd-laptop|omnix-amd-desktop)
+    # Default host — profile follows the suffix.
+    PROFILE="${HOST#omnix-}"
+    ;;
+  *)
+    # Custom host — confirm profile (defaults to whatever phase1 picked).
+    echo ""
+    echo "Custom host '$HOST'. Which hardware profile should it use?"
+    echo "  vm | intel-laptop | intel-desktop | amd-laptop | amd-desktop"
+    PROFILE=$(ask "Profile" "$DEFAULT_PROFILE")
+    case "$PROFILE" in
+      vm|intel-laptop|intel-desktop|amd-laptop|amd-desktop) ;;
+      *) echo "Unknown profile: $PROFILE" >&2; exit 1 ;;
+    esac
+    ;;
 esac
 
 TIMEZONE=$(ask "Timezone" "$DEFAULT_TIMEZONE")
@@ -90,6 +111,7 @@ USERNAME=$USER
 echo "==> Persisting answers to $ENV_FILE"
 sudo tee "$ENV_FILE" >/dev/null <<EOF
 OMNIX_HOST=$HOST
+OMNIX_PROFILE=$PROFILE
 OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET
@@ -106,11 +128,20 @@ if [ ! -d "$REPO" ]; then
   mkdir -p "$HOME/.local/share"
   git clone -b omnix-mango https://github.com/galleb/omvoid.git "$REPO"
 
-  # Profile is the host name with the "omnix-" prefix stripped:
-  # omnix-vm           → vm
-  # omnix-intel-laptop → intel-laptop
-  # omnix-amd-desktop  → amd-desktop, etc.
-  PROFILE="${HOST#omnix-}"
+  # Custom host? Create its directory by copying the matching default
+  # host as a template (omnix-<profile>) and renaming.
+  if [ ! -d "$REPO/hosts/$HOST" ]; then
+    SOURCE_HOST="omnix-$PROFILE"
+    if [ ! -d "$REPO/hosts/$SOURCE_HOST" ]; then
+      echo "Internal error: template host '$SOURCE_HOST' not found in repo." >&2
+      exit 1
+    fi
+    echo "==> Custom host '$HOST': cloning template $SOURCE_HOST → hosts/$HOST"
+    cp -r "$REPO/hosts/$SOURCE_HOST" "$REPO/hosts/$HOST"
+    # Replace the template's hostname inside default.nix with the new one.
+    sed -i "s|networking.hostName = \"$SOURCE_HOST\";|networking.hostName = \"$HOST\";|" \
+      "$REPO/hosts/$HOST/default.nix"
+  fi
 
   echo "==> Writing $REPO/hosts/$HOST/variables.nix (profile = $PROFILE)"
   cat > "$REPO/hosts/$HOST/variables.nix" <<EOF
