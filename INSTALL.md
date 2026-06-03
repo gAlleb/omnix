@@ -115,7 +115,7 @@ This single command does what steps 3 + 4 of the old README did
 (`nixos-generate-config` and writing a minimal `configuration.nix`):
 
 ```sh
-curl -L https://raw.githubusercontent.com/galleb/omvoid/omnix-mango/install/phase1-iso.sh | sudo bash
+curl -L https://raw.githubusercontent.com/galleb/omnix/refs/heads/main/install/phase1-iso.sh| sudo bash
 ```
 
 It asks:
@@ -160,7 +160,7 @@ ssh <username>@<vm-ip>
 Then:
 
 ```sh
-curl -L https://raw.githubusercontent.com/galleb/omvoid/omnix-mango/install/phase2-system.sh | bash
+curl -L https://raw.githubusercontent.com/galleb/omnix/refs/heads/main/install/phase2-system.sh | bash
 ```
 
 Phase 2:

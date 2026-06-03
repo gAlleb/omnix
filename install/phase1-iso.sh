@@ -245,5 +245,5 @@ cat <<EOF
 Phase 1 done.
 
 After reboot, log in as $USERNAME and run phase 2:
-  curl -L https://raw.githubusercontent.com/galleb/omvoid/omnix-mango/install/phase2-system.sh | bash
+  curl -L https://raw.githubusercontent.com/galleb/omnix/refs/heads/install/phase2-system.sh | bash
 EOF
