@@ -154,7 +154,7 @@ REPO="$HOME/.local/share/omnix"
 if [ ! -d "$REPO" ]; then
   echo "==> Cloning flake into $REPO"
   mkdir -p "$HOME/.local/share"
-  git clone -b omnix-mango https://github.com/galleb/omvoid.git "$REPO"
+  git clone https://github.com/galleb/omnix.git "$REPO"
 
   # Custom host? Create its directory from scratch — pure heredoc, no
   # cp+sed. The default.nix written here is the same shape as the
