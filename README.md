@@ -21,44 +21,93 @@
 
 ## Quickstart
 
+Five hardware-aware default hosts are ready out of the box:
+
 ```bash
-sudo nixos-rebuild switch --flake .#omnix       # real laptop
-sudo nixos-rebuild switch --flake .#omnix-vm    # Proxmox VM
+sudo nixos-rebuild switch --flake .#omnix-vm             # Proxmox / QEMU VM
+sudo nixos-rebuild switch --flake .#omnix-intel-laptop   # Intel iGPU laptop
+sudo nixos-rebuild switch --flake .#omnix-intel-desktop  # Intel iGPU desktop
+sudo nixos-rebuild switch --flake .#omnix-amd-laptop     # AMD GPU laptop
+sudo nixos-rebuild switch --flake .#omnix-amd-desktop    # AMD GPU desktop
 ```
 
-See [INSTALL.md](./INSTALL.md) for a step-by-step bring-up from a NixOS
-installer ISO.
+Plus **custom hosts** — `hosts/<your-name>/` is auto-picked up by
+`flake.nix` via `builtins.readDir`, no edits needed. The installer
+creates it for you.
+
+## Install
+
+Two scripts in `install/` walk you from a freshly-booted NixOS ISO to
+a running mango desktop:
+
+```bash
+# 1) On the install ISO (after partitioning + mount):
+curl -L https://raw.githubusercontent.com/galleb/omnix/refs/heads/main/install/phase1-iso.sh | sudo bash
+
+# 2) After first boot, logged in as your user:
+curl -L https://raw.githubusercontent.com/galleb/omnix/refs/heads/main/install/phase2-system.sh | bash
+```
+
+Phase 1 auto-detects GPU / form-factor / boot mode, asks a handful of
+questions, writes a minimal `configuration.nix`, runs `nixos-install`
+and reboots. Phase 2 clones the flake into `~/.local/share/omnix`,
+writes `hosts/<host>/variables.nix` with your answers, copies the
+real `hardware-configuration.nix` into place, and runs
+`nixos-rebuild boot --flake .#<host>`. See [INSTALL.md](./INSTALL.md)
+for full step-by-step.
 
 ## Layout
 
 ```
-flake.nix             # inputs (nixpkgs unstable, home-manager) + two hosts
+flake.nix             # inputs (nixpkgs unstable, home-manager,
+                      # tmux-nerd-font-window-name). nixosConfigurations
+                      # auto-discovered from hosts/<x>/variables.nix.
 hosts/
-  omnix/              # real laptop: Intel iGPU, TLP, udev power-event
-  omnix-vm/           # Proxmox VM: qemu-guest-agent, no TLP
-modules/system/       # system modules (boot, audio, fonts, services, ...)
+  omnix-vm/           # Proxmox / QEMU VM
+  omnix-intel-laptop/ # Intel iGPU laptop (TLP, brightness)
+  omnix-intel-desktop/
+  omnix-amd-laptop/
+  omnix-amd-desktop/
+  <yours>/            # any directory you drop here becomes .#<yours>
+profiles/             # hardware profiles. Each one imports the host +
+                      # modules/system + modules/drivers and flips on
+                      # the right drivers.<x>.enable booleans.
+modules/drivers/      # one option-based module per hw category:
+  intel.nix           #   intel-media-driver, LIBVA, thermald
+  amd.nix             #   amdvlk
+  laptop.nix          #   TLP, upower, brightnessctl, udev AC events
+  vm.nix              #   qemu-guest-agent, spice
+modules/system/       # boot, networking, locale, users, audio, bluetooth,
+                      # desktop, fonts, docker, services, filesystems,
+                      # packages, nix, ssh
 modules/home/         # home-manager modules (shell, git, tmux, gtk, ...)
 pkgs/                 # custom packages not in nixpkgs:
   sfpro-display/      #   SF Pro Display (fetchurl GitHub release)
-  photogimp-config/   #   PhotoGIMP config (pinned commit, deployed into
-                      #   ~/.config/GIMP on first activation only)
+  photogimp-config/   #   PhotoGIMP config (deployed into ~/.config/GIMP
+                      #   on first activation only)
   omnix-scripts/      #   wraps bin/omnix-* helper scripts as a package
+  wal-telegram/       #   pywal palette → Telegram theme converter
 overlays/             # plugs pkgs/ into the package set
 config/               # "live" dotfiles — symlinked into ~/.config by HM
-themes/               # pywal themes, referenced from ~/.config/omnix/
-bin/                  # omnix-* helper scripts (theme/wallpaper/audio/waybar)
-applications/         # .desktop / icons, symlinked into ~/.local/share/applications
-default/xcompose      # base Compose table, read by home-manager
-INSTALL.md            # step-by-step install from a NixOS ISO
+themes/               # pywal themes
+bin/                  # omnix-* helper scripts (theme/wallpaper/font/...)
+applications/         # .desktop / icons, deployed into ~/.local/share/*
+install/              # phase1-iso.sh + phase2-system.sh
+INSTALL.md            # step-by-step install
 ```
+
+Per-host configuration (username, timezone, LAN subnet, bootMode,
+swapSize, git persona, extras toggle, drivers profile) lives in
+`hosts/<x>/variables.nix`. Each `default.nix` reads from there; no
+hardcoded values.
 
 ## Applying changes
 
 ```bash
 cd ~/.local/share/omnix
-nix flake update                              # bump inputs
-sudo nixos-rebuild switch --flake .#omnix
-sudo nixos-rebuild switch --rollback          # back to the previous generation
+nix flake update                                # bump inputs
+sudo nixos-rebuild switch --flake .#<host>
+sudo nixos-rebuild switch --rollback            # previous generation
 ```
 
 ## What's declarative vs symlinked
