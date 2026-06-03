@@ -27,6 +27,9 @@ ENV_FILE=/etc/omnix-install.env
 # Defaults, possibly overridden by env file
 DEFAULT_HOST=omnix-vm
 DEFAULT_PROFILE=vm
+DEFAULT_BOOT_MODE=uefi
+DEFAULT_BIOS_DEVICE=/dev/sda
+DEFAULT_SWAP_SIZE=8192
 DEFAULT_TIMEZONE="Europe/Moscow"
 DEFAULT_LAN_SUBNET=192.168.1.0/24
 DEFAULT_EXTRAS=false
@@ -39,6 +42,9 @@ if [ -r "$ENV_FILE" ]; then
   . "$ENV_FILE"
   DEFAULT_HOST=${OMNIX_HOST:-$DEFAULT_HOST}
   DEFAULT_PROFILE=${OMNIX_PROFILE:-$DEFAULT_PROFILE}
+  DEFAULT_BOOT_MODE=${OMNIX_BOOT_MODE:-$DEFAULT_BOOT_MODE}
+  DEFAULT_BIOS_DEVICE=${OMNIX_BIOS_DEVICE:-$DEFAULT_BIOS_DEVICE}
+  DEFAULT_SWAP_SIZE=${OMNIX_SWAP_SIZE:-$DEFAULT_SWAP_SIZE}
   DEFAULT_TIMEZONE=${OMNIX_TIMEZONE:-$DEFAULT_TIMEZONE}
   DEFAULT_LAN_SUBNET=${OMNIX_LAN_SUBNET:-$DEFAULT_LAN_SUBNET}
   DEFAULT_EXTRAS=${OMNIX_EXTRAS:-$DEFAULT_EXTRAS}
@@ -51,6 +57,8 @@ fi
 # this commit landed)
 : "${DEFAULT_FULL_NAME:=$USER}"
 : "${DEFAULT_EMAIL:=$USER@$DEFAULT_HOST}"
+# BIOS_DEVICE only matters when bootMode = bios; harmless otherwise.
+[ -n "$DEFAULT_BIOS_DEVICE" ] || DEFAULT_BIOS_DEVICE=/dev/sda
 
 if [ "$USER" != "$EXPECTED_USER" ]; then
   echo "Warning: phase 1 created user '$EXPECTED_USER', but you're logged in as '$USER'." >&2
@@ -92,6 +100,23 @@ case "$HOST" in
     ;;
 esac
 
+BOOT_MODE=$(ask "Boot mode (uefi | bios)" "$DEFAULT_BOOT_MODE")
+case "$BOOT_MODE" in
+  uefi|bios) ;;
+  *) echo "Unknown boot mode: $BOOT_MODE" >&2; exit 1 ;;
+esac
+
+if [ "$BOOT_MODE" = "bios" ]; then
+  BIOS_DEVICE=$(ask "Disk for GRUB" "$DEFAULT_BIOS_DEVICE")
+else
+  BIOS_DEVICE=$DEFAULT_BIOS_DEVICE   # carried through but unused
+fi
+
+SWAP_SIZE=$(ask "Swap size in MiB" "$DEFAULT_SWAP_SIZE")
+if [[ ! "$SWAP_SIZE" =~ ^[0-9]+$ ]]; then
+  echo "Invalid swap size: $SWAP_SIZE" >&2; exit 1
+fi
+
 TIMEZONE=$(ask "Timezone" "$DEFAULT_TIMEZONE")
 LAN_SUBNET=$(ask "LAN subnet allowed through firewall" "$DEFAULT_LAN_SUBNET")
 
@@ -112,6 +137,9 @@ echo "==> Persisting answers to $ENV_FILE"
 sudo tee "$ENV_FILE" >/dev/null <<EOF
 OMNIX_HOST=$HOST
 OMNIX_PROFILE=$PROFILE
+OMNIX_BOOT_MODE=$BOOT_MODE
+OMNIX_BIOS_DEVICE=$BIOS_DEVICE
+OMNIX_SWAP_SIZE=$SWAP_SIZE
 OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET
@@ -128,22 +156,42 @@ if [ ! -d "$REPO" ]; then
   mkdir -p "$HOME/.local/share"
   git clone -b omnix-mango https://github.com/galleb/omvoid.git "$REPO"
 
-  # Custom host? Create its directory by copying the matching default
-  # host as a template (omnix-<profile>) and renaming.
+  # Custom host? Create its directory from scratch — pure heredoc, no
+  # cp+sed. The default.nix written here is the same shape as the
+  # default hosts in the repo (reads ./variables.nix, hostName from
+  # specialArgs). variables.nix is the user-tunable contract.
   if [ ! -d "$REPO/hosts/$HOST" ]; then
-    SOURCE_HOST="omnix-$PROFILE"
-    if [ ! -d "$REPO/hosts/$SOURCE_HOST" ]; then
-      echo "Internal error: template host '$SOURCE_HOST' not found in repo." >&2
-      exit 1
-    fi
-    echo "==> Custom host '$HOST': cloning template $SOURCE_HOST → hosts/$HOST"
-    cp -r "$REPO/hosts/$SOURCE_HOST" "$REPO/hosts/$HOST"
-    # Replace the template's hostname inside default.nix with the new one.
-    sed -i "s|networking.hostName = \"$SOURCE_HOST\";|networking.hostName = \"$HOST\";|" \
-      "$REPO/hosts/$HOST/default.nix"
+    echo "==> Custom host '$HOST': creating hosts/$HOST from scratch"
+    mkdir -p "$REPO/hosts/$HOST"
+
+    cat > "$REPO/hosts/$HOST/default.nix" <<'NIX'
+{ config, lib, pkgs, hostName, ... }:
+# Per-host config. All values come from ./variables.nix; hostName
+# comes from flake.nix specialArgs (= the directory name). Add any
+# host-specific Nix here that doesn't fit the variables.nix schema
+# — an extra service, a one-off package list, an override.
+let
+  vars = import ./variables.nix;
+in
+{
+  imports = [
+    ./hardware-configuration.nix
+  ];
+
+  networking.hostName = hostName;
+
+  omnix.profile.extras     = vars.extras;
+  omnix.profile.bios       = vars.bootMode == "bios";
+  omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
+
+  swapDevices = [
+    { device = "/swapfile"; size = vars.swapSize; }   # MiB
+  ];
+}
+NIX
   fi
 
-  echo "==> Writing $REPO/hosts/$HOST/variables.nix (profile = $PROFILE)"
+  echo "==> Writing $REPO/hosts/$HOST/variables.nix"
   cat > "$REPO/hosts/$HOST/variables.nix" <<EOF
 {
   username  = "$USERNAME";
@@ -151,7 +199,11 @@ if [ ! -d "$REPO" ]; then
   lanSubnet = "$LAN_SUBNET";
   extras    = $EXTRAS;
 
-  profile   = "$PROFILE";
+  profile    = "$PROFILE";
+
+  bootMode   = "$BOOT_MODE";
+  biosDevice = "$BIOS_DEVICE";
+  swapSize   = $SWAP_SIZE;
 
   fullName  = "$FULL_NAME";
   email     = "$EMAIL";

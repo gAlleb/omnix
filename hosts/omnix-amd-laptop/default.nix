@@ -1,6 +1,11 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, hostName, ... }:
+# Per-host config. All values come from ./variables.nix; hostName
+# comes from flake.nix specialArgs (= the directory name). If you
+# need anything host-specific that doesn't fit the variables.nix
+# schema (an extra service, a one-off package list, an override),
+# add it here — this file is the escape hatch.
 let
-  inherit (import ./variables.nix) extras;
+  vars = import ./variables.nix;
 in
 {
   imports = [
@@ -10,16 +15,13 @@ in
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "omnix-amd-laptop";
+  networking.hostName = hostName;
 
-  # Hardware drivers (amd + laptop power-mgmt) are turned on by the
-  # "amd-laptop" profile (variables.nix → profile = "amd-laptop"):
-  # drivers.amd.enable + drivers.laptop.enable.
+  omnix.profile.extras     = vars.extras;
+  omnix.profile.bios       = vars.bootMode == "bios";
+  omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
 
-  omnix.profile.extras = extras;
-
-  # 8 GiB swapfile. Adjust as needed.
   swapDevices = [
-    { device = "/swapfile"; size = 8192; }   # size in MiB
+    { device = "/swapfile"; size = vars.swapSize; }   # MiB
   ];
 }

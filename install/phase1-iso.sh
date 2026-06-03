@@ -118,6 +118,16 @@ if [ "$BOOT" = "bios" ]; then
   DISK=$(ask "Disk device for GRUB" "/dev/sda")
 fi
 
+# Swap size in MiB. VM defaults to 4 GiB; everything else to 8 GiB.
+case "$PROFILE" in
+  vm) DEFAULT_SWAP=4096 ;;
+  *)  DEFAULT_SWAP=8192 ;;
+esac
+SWAP_SIZE=$(ask "Swap size in MiB" "$DEFAULT_SWAP")
+if [[ ! "$SWAP_SIZE" =~ ^[0-9]+$ ]] || [ "$SWAP_SIZE" -lt 0 ]; then
+  echo "Invalid swap size: $SWAP_SIZE" >&2; exit 1
+fi
+
 USERNAME=$(ask "Username" "stefan")
 TIMEZONE=$(ask "Timezone" "Europe/Moscow")
 LAN_SUBNET=$(ask "LAN subnet allowed through firewall" "192.168.1.0/24")
@@ -207,6 +217,9 @@ echo "==> Writing /mnt/etc/omnix-install.env (for phase 2)"
 cat > /mnt/etc/omnix-install.env <<EOF
 OMNIX_HOST=$HOST
 OMNIX_PROFILE=$PROFILE
+OMNIX_BOOT_MODE=$BOOT
+OMNIX_BIOS_DEVICE=$DISK
+OMNIX_SWAP_SIZE=$SWAP_SIZE
 OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET

@@ -1,6 +1,11 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, hostName, ... }:
+# Per-host config. All values come from ./variables.nix; hostName
+# comes from flake.nix specialArgs (= the directory name). If you
+# need anything host-specific that doesn't fit the variables.nix
+# schema (an extra service, a one-off package list, an override),
+# add it here — this file is the escape hatch.
 let
-  inherit (import ./variables.nix) extras;
+  vars = import ./variables.nix;
 in
 {
   imports = [
@@ -10,24 +15,13 @@ in
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "omnix-vm";
+  networking.hostName = hostName;
 
-  # VM guest services (qemu-guest-agent, spice) come in via the "vm"
-  # profile this host is mapped to in flake.nix:
-  # profile = "vm" → drivers.vm.enable.
+  omnix.profile.extras     = vars.extras;
+  omnix.profile.bios       = vars.bootMode == "bios";
+  omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
 
-  omnix.profile.extras = extras;
-
-  # Proxmox VM was provisioned with SeaBIOS / legacy boot; flip this to
-  # false (or just remove) if you re-create the VM with OVMF/UEFI.
-  omnix.profile.bios = true;
-  omnix.profile.biosDevice = "/dev/sda";
-
-  # 4 GiB swapfile. NixOS creates /swapfile on `nixos-rebuild switch`
-  # via systemd-makefs, formats it, and turns swap on automatically.
-  # Eats ~30 s on first rebuild while the file is allocated.
-  # Drop or shrink if the VM has plenty of RAM.
   swapDevices = [
-    { device = "/swapfile"; size = 4096; }   # size in MiB
+    { device = "/swapfile"; size = vars.swapSize; }   # MiB
   ];
 }
