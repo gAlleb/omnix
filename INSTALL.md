@@ -1,23 +1,35 @@
 # Installing NixOS from this flake
 
-> Goal: a system you bring up with `sudo nixos-rebuild switch --flake .#omnix`
-> (or `.#omnix-vm` for a Proxmox dry-run).
+> Goal: a system you bring up with
+> `sudo nixos-rebuild switch --flake .#<host>`.
 
-Two hosts are defined:
+Five default hosts are defined:
 
 | Host | When to use |
 |---|---|
-| `.#omnix-vm` | Proxmox / QEMU VM. No TLP, no intel-media-driver, ships `qemu-guest-agent`. |
-| `.#omnix`    | Real laptop. TLP, intel-media-driver, udev power-event rule. |
+| `.#omnix-vm`            | Proxmox / QEMU VM (BIOS, qemu-guest-agent, spice). |
+| `.#omnix-intel-laptop`  | Intel iGPU laptop (TLP, intel-media-driver, brightnessctl). |
+| `.#omnix-intel-desktop` | Intel iGPU desktop (no battery management). |
+| `.#omnix-amd-laptop`    | AMD GPU laptop (TLP, amdvlk). |
+| `.#omnix-amd-desktop`   | AMD GPU desktop. |
 
-How a host gets its drivers: `flake.nix` `mkHost` maps a hostName to a
-profile name (`omnix → intel-laptop`, `omnix-vm → vm`). Each profile
-under `profiles/<x>/default.nix` imports the host config, `modules/system`,
-and `modules/drivers`, then flips on the right
-`drivers.{intel,amd,laptop,vm}.enable` flags. To add an AMD host
-later: create `hosts/omnix-amd/`, create `profiles/amd-laptop/` (with
-`drivers.amd.enable = true; drivers.laptop.enable = true;`), and add
-one line to `nixosConfigurations` in `flake.nix`.
+Plus **custom hosts** — type any other hostname at the phase1 prompt
+and phase2 will copy the matching default host as a template and
+rename it to whatever you typed. Useful if you want
+`hosts/my-thinkpad/` instead of `hosts/omnix-intel-laptop/`.
+
+How a host gets its drivers: each `hosts/<host>/variables.nix` has a
+`profile = "..."` field (one of: `vm`, `intel-laptop`, `intel-desktop`,
+`amd-laptop`, `amd-desktop`). `flake.nix` auto-discovers every
+subdirectory under `hosts/` via `builtins.readDir` and feeds the
+profile from variables.nix to `mkHost`. The profile under
+`profiles/<x>/default.nix` then imports the host config, `modules/system`,
+`modules/drivers`, and flips on the right `drivers.{intel,amd,laptop,vm}.enable`.
+
+**Adding a host without the installer**: create a directory under
+`hosts/<new-name>/` with `default.nix`, `hardware-configuration.nix`,
+and `variables.nix` (set `profile = "..."` to one of the five values).
+That's it — no `flake.nix` edits.
 
 ---
 
@@ -102,13 +114,15 @@ It asks:
 
 | Question | Default | Notes |
 |---|---|---|
-| Host profile | `omnix-vm` | `omnix` for the real laptop |
+| Host name | auto-detected | lspci + battery probe → suggests one of the 5 default hosts. Type a different name for a custom host. |
+| Profile (custom only) | auto-detected | Only asked if the host name isn't one of the 5 defaults. |
 | Boot mode | `uefi` | `bios` for legacy installs |
 | Disk for GRUB | `/dev/sda` | BIOS only |
 | Username | `stefan` | Your account name |
 | Timezone | `Europe/Moscow` | Any `tzdata` zone |
 | LAN subnet | `192.168.1.0/24` | Subnet allowed through the firewall |
 | Heavy extras | `N` | Brave, Chromium, VLC, OBS, Telegram, Audacity, etc. Skip on a tiny VM. |
+| Full name / email | — | For git commits. Saved into `variables.nix`, change anytime. |
 | Initial password | — | Hashed with `mkpasswd -m sha-512` |
 
 When it finishes, you get a minimal `configuration.nix` that boots
