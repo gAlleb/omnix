@@ -11,6 +11,14 @@
   # Hardware profile — flake.nix читает это поле и подставляет в mkHost.
   profile   = "vm";
 
+  # Boot loader: "uefi" or "bios". Default Proxmox VM is BIOS/SeaBIOS,
+  # but Proxmox can also boot OVMF/UEFI — phase1 asks at install time.
+  bootMode   = "bios";
+  biosDevice = "/dev/sda";   # used only when bootMode = "bios"
+
+  # Swap file size in MiB. 4 GiB sane default for a VM.
+  swapSize = 4096;
+
   # Git persona — phase2 спрашивает и тоже пишет сюда.
   fullName  = "galleb";
   email     = "s@omfm.ru";

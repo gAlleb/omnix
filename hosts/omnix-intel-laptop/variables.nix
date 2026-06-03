@@ -8,10 +8,15 @@
   lanSubnet = "192.168.1.0/24";
   extras    = true;
 
-  # Hardware profile — flake.nix читает это поле и подставляет в mkHost.
   profile   = "intel-laptop";
 
-  # Git persona — phase2 спрашивает и тоже пишет сюда.
+  # Boot loader: "uefi" (default for modern laptops) or "bios".
+  bootMode   = "uefi";
+  biosDevice = "/dev/sda";   # ignored unless bootMode = "bios"
+
+  # Swap file size in MiB. 8 GiB lets hibernation work on most setups.
+  swapSize = 8192;
+
   fullName  = "galleb";
   email     = "s@omfm.ru";
 }

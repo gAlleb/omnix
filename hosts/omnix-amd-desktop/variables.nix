@@ -6,6 +6,11 @@
 
   profile   = "amd-desktop";
 
+  bootMode   = "uefi";
+  biosDevice = "/dev/sda";
+
+  swapSize = 8192;
+
   fullName  = "stefan";
   email     = "stefan@localhost";
 }
