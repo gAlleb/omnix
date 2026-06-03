@@ -18,16 +18,22 @@
       system = "x86_64-linux";
 
       # ┌──────────────────────────────────────────────────────────────────┐
-      # │ Per-host user settings (username, timezone, LAN subnet, extras   │
-      # │ flag, git persona) live in hosts/<hostName>/variables.nix.       │
-      # │ install/phase2-system.sh writes that file on installation.       │
-      # │ For a manual fork, edit it directly.                             │
+      # │ Per-host user settings live in hosts/<hostName>/variables.nix    │
+      # │ — username, timezone, LAN subnet, extras flag, git persona, and  │
+      # │ the `profile` field that selects which profiles/<x>/default.nix  │
+      # │ to apply. install/phase2-system.sh writes that file on install;  │
+      # │ for a manual fork, edit it directly.                             │
       # │                                                                  │
       # │ Hardware drivers live in modules/drivers/<x>.nix as              │
       # │ options.drivers.<x>.enable. A profile under profiles/<y>/        │
       # │ default.nix turns on the right combination and imports the host  │
-      # │ + modules/system + modules/drivers. mkHost just maps a hostName  │
-      # │ to a profile here.                                               │
+      # │ + modules/system + modules/drivers.                              │
+      # │                                                                  │
+      # │ nixosConfigurations below is auto-discovered: every subdirectory │
+      # │ under hosts/ becomes a buildable target named after the dir, and │
+      # │ uses the profile declared in that host's variables.nix. To add   │
+      # │ a new host: create hosts/<myname>/{default.nix,                  │
+      # │ hardware-configuration.nix,variables.nix} and rebuild.           │
       # └──────────────────────────────────────────────────────────────────┘
 
       mkHost = { hostName, profile, extraModules ? [] }: let
@@ -53,11 +59,17 @@
           }
         ] ++ extraModules;
       };
+
+      # Auto-discover every subdirectory under hosts/ as a buildable target.
+      hostNames = builtins.attrNames (
+        nixpkgs.lib.filterAttrs (_: t: t == "directory") (builtins.readDir ./hosts)
+      );
+      mkHostFromDir = name: let
+        vars = import (./hosts + "/${name}/variables.nix");
+      in mkHost { hostName = name; profile = vars.profile; };
     in {
-      nixosConfigurations = {
-        omnix    = mkHost { hostName = "omnix";    profile = "intel-laptop"; };
-        omnix-vm = mkHost { hostName = "omnix-vm"; profile = "vm"; };
-      };
+      nixosConfigurations =
+        builtins.listToAttrs (map (n: { name = n; value = mkHostFromDir n; }) hostNames);
 
       packages.${system} = import ./pkgs {
         pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };

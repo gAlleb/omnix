@@ -106,13 +106,21 @@ if [ ! -d "$REPO" ]; then
   mkdir -p "$HOME/.local/share"
   git clone -b omnix-mango https://github.com/galleb/omvoid.git "$REPO"
 
-  echo "==> Writing $REPO/hosts/$HOST/variables.nix"
+  # Profile is the host name with the "omnix-" prefix stripped:
+  # omnix-vm           → vm
+  # omnix-intel-laptop → intel-laptop
+  # omnix-amd-desktop  → amd-desktop, etc.
+  PROFILE="${HOST#omnix-}"
+
+  echo "==> Writing $REPO/hosts/$HOST/variables.nix (profile = $PROFILE)"
   cat > "$REPO/hosts/$HOST/variables.nix" <<EOF
 {
   username  = "$USERNAME";
   timeZone  = "$TIMEZONE";
   lanSubnet = "$LAN_SUBNET";
   extras    = $EXTRAS;
+
+  profile   = "$PROFILE";
 
   fullName  = "$FULL_NAME";
   email     = "$EMAIL";

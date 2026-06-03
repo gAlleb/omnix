@@ -10,17 +10,15 @@ in
     ./hardware-configuration.nix
   ];
 
-  networking.hostName = "omnix";
+  networking.hostName = "omnix-intel-desktop";
 
-  # Hardware drivers (intel + laptop power-mgmt) are turned on by the
-  # profile this host is mapped to in flake.nix:
-  # profile = "intel-laptop" → drivers.intel.enable + drivers.laptop.enable.
+  # Hardware drivers (intel only, no laptop power-mgmt) are turned on
+  # by the "intel-desktop" profile (variables.nix → profile = "intel-desktop"):
+  # drivers.intel.enable.
 
   omnix.profile.extras = extras;
 
-  # 8 GiB swapfile. Bump to >= installed RAM if you want hibernation,
-  # or shrink if your SSD budget is tight. Created and turned on
-  # automatically on `nixos-rebuild switch`.
+  # 8 GiB swapfile. Adjust as needed.
   swapDevices = [
     { device = "/swapfile"; size = 8192; }   # size in MiB
   ];

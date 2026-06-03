@@ -33,10 +33,20 @@ ask() {
   echo "${var:-$default}"
 }
 
-HOST=$(ask "Host profile (omnix-vm | omnix)" "omnix-vm")
+cat <<'EOF'
+Available default hosts:
+  omnix-vm              — Proxmox / QEMU virtual machine
+  omnix-intel-laptop    — Intel iGPU laptop (TLP, brightness)
+  omnix-intel-desktop   — Intel iGPU desktop
+  omnix-amd-laptop      — AMD GPU laptop (TLP, brightness)
+  omnix-amd-desktop     — AMD GPU desktop
+EOF
+HOST=$(ask "Host profile" "omnix-vm")
 case "$HOST" in
-  omnix|omnix-vm) ;;
-  *) echo "Unknown host: $HOST" >&2; exit 1 ;;
+  omnix-vm|omnix-intel-laptop|omnix-intel-desktop|omnix-amd-laptop|omnix-amd-desktop) ;;
+  *) echo "Unknown host: $HOST" >&2
+     echo "(Custom hosts will be supported in a follow-up — for now pick one of the above.)" >&2
+     exit 1 ;;
 esac
 
 BOOT=$(ask "Boot mode (uefi | bios)" "uefi")
