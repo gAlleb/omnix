@@ -137,6 +137,7 @@ It asks:
 | iGPU + NVIDIA bus IDs (PRIME only) | auto-detected | Only asked for `nvidia-intel-laptop` / `nvidia-amd-laptop`. Phase1 reads lspci and converts `01:00.0` → `PCI:1:0:0`. |
 | Boot mode | `uefi` | `bios` for legacy installs. Even VMs can use either — Proxmox OVMF works. |
 | Disk for GRUB | `/dev/sda` | BIOS only |
+| UEFI loader | `grub` | UEFI only. `grub` — universal, os-prober for Windows. `systemd-boot` — smaller, auto-detects any UEFI OS in the same ESP. |
 | Swap size in MiB | `4096` (vm) / `8192` (others) | Saved into `variables.nix` as `swapSize`. Edit anytime + rebuild. |
 | Username | `stefan` | Your account name |
 | Timezone | `Europe/Moscow` | Any `tzdata` zone |
@@ -284,3 +285,64 @@ Or pick an older generation from the GRUB menu at boot.
 - **Phase 2 says `expects to run as '<x>', not '<y>'`.** You logged in
   as a different user than the one phase 1 created. Log in as the
   username you set during phase 1.
+
+---
+
+## 9. Multi-boot installation (advanced)
+
+If you want to add omnix as an extra OS next to an existing Linux or
+Windows install **without** repartitioning their ESP, you have two
+working paths.
+
+### Path A — big ESP (≥ 500 MiB), systemd-boot
+
+If the existing ESP is roughly 1 GiB (or you can afford to use it for
+NixOS kernels too), this is the simplest:
+
+```sh
+# Create only a new ext4 for NixOS root; leave the existing ESP alone.
+sudo mkfs.ext4 -L nixos-root /dev/sdaN
+
+# Mount root + the EXISTING ESP as /mnt/boot
+sudo mount /dev/sdaN /mnt
+sudo mkdir -p /mnt/boot
+sudo mount /dev/sda1 /mnt/boot       # ← existing ESP
+```
+
+In phase1 answer **`uefi`** and **`systemd-boot`** at the loader
+prompt. systemd-boot will be installed into the shared ESP and
+automatically list every `.efi` file already there — your Windows
+Boot Manager and existing Linux GRUB show up in its menu without any
+extra config. NixOS kernels live in `/boot` (= the ESP).
+
+### Path B — small ESP (e.g. 38 MiB inherited from Windows), GRUB Void-style
+
+If the existing ESP is too small to hold NixOS kernels, mount it as
+`/boot/efi` and keep NixOS kernels on the ext4 root:
+
+```sh
+sudo mkfs.ext4 -L nixos-root /dev/sdaN
+sudo mount /dev/sdaN /mnt
+sudo mkdir -p /mnt/boot/efi
+sudo mount /dev/sda1 /mnt/boot/efi   # ← small inherited ESP here
+```
+
+In phase1 answer **`uefi`** and **`grub`** at the loader prompt — that
+generates a GRUB-EFI block. But phase1's generated
+`configuration.nix` assumes `/boot = ESP`, so you need **two edits**:
+
+1. **Before `nixos-install`** open `/mnt/etc/nixos/configuration.nix`
+   and add one line:
+   ```nix
+   boot.loader.efi.canTouchEfiVariables = true;
+   boot.loader.efi.efiSysMountPoint = "/boot/efi";   # ← add this
+   ```
+2. **After phase 2** open `~/.local/share/omnix/hosts/<host>/default.nix`
+   and add the same line in the config block.
+
+NixOS kernels then live in `/boot/` on the ext4 root (like Void),
+GRUB EFI binary lands in the small ESP next to Windows/Void. Caveat:
+GRUB's `useOSProber` only detects Windows reliably — for Void you'll
+either see it via UEFI firmware menu (F12 at boot), or add a manual
+GRUB entry. systemd-boot would have detected both, but it needs the
+big ESP.
