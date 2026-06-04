@@ -21,14 +21,17 @@
 
 ## Quickstart
 
-Five hardware-aware default hosts are ready out of the box:
+Eight hardware-aware default hosts are ready out of the box:
 
 ```bash
-sudo nixos-rebuild switch --flake .#omnix-vm             # Proxmox / QEMU VM
-sudo nixos-rebuild switch --flake .#omnix-intel-laptop   # Intel iGPU laptop
-sudo nixos-rebuild switch --flake .#omnix-intel-desktop  # Intel iGPU desktop
-sudo nixos-rebuild switch --flake .#omnix-amd-laptop     # AMD GPU laptop
-sudo nixos-rebuild switch --flake .#omnix-amd-desktop    # AMD GPU desktop
+sudo nixos-rebuild switch --flake .#omnix-vm                    # Proxmox / QEMU VM
+sudo nixos-rebuild switch --flake .#omnix-intel-laptop          # Intel iGPU laptop
+sudo nixos-rebuild switch --flake .#omnix-intel-desktop         # Intel iGPU desktop
+sudo nixos-rebuild switch --flake .#omnix-amd-laptop            # AMD GPU laptop
+sudo nixos-rebuild switch --flake .#omnix-amd-desktop           # AMD GPU desktop
+sudo nixos-rebuild switch --flake .#omnix-nvidia-intel-laptop   # Intel CPU + NVIDIA dGPU laptop (PRIME)
+sudo nixos-rebuild switch --flake .#omnix-nvidia-amd-laptop     # AMD CPU + NVIDIA dGPU laptop (PRIME)
+sudo nixos-rebuild switch --flake .#omnix-nvidia-desktop        # Discrete NVIDIA desktop (any CPU)
 ```
 
 Plus **custom hosts** — `hosts/<your-name>/` is auto-picked up by
@@ -63,18 +66,23 @@ flake.nix             # inputs (nixpkgs unstable, home-manager,
                       # tmux-nerd-font-window-name). nixosConfigurations
                       # auto-discovered from hosts/<x>/variables.nix.
 hosts/
-  omnix-vm/           # Proxmox / QEMU VM
-  omnix-intel-laptop/ # Intel iGPU laptop (TLP, brightness)
+  omnix-vm/                  # Proxmox / QEMU VM
+  omnix-intel-laptop/        # Intel iGPU laptop (TLP, brightness)
   omnix-intel-desktop/
   omnix-amd-laptop/
   omnix-amd-desktop/
-  <yours>/            # any directory you drop here becomes .#<yours>
+  omnix-nvidia-intel-laptop/ # Intel + NVIDIA hybrid laptop (PRIME)
+  omnix-nvidia-amd-laptop/   # AMD + NVIDIA hybrid laptop (PRIME)
+  omnix-nvidia-desktop/      # Discrete NVIDIA desktop
+  <yours>/                   # any directory you drop here becomes .#<yours>
 profiles/             # hardware profiles. Each one imports the host +
                       # modules/system + modules/drivers and flips on
                       # the right drivers.<x>.enable booleans.
 modules/drivers/      # one option-based module per hw category:
   intel.nix           #   intel-media-driver, LIBVA, thermald
   amd.nix             #   amdvlk
+  nvidia.nix          #   NVIDIA drivers (modesetting, open kernel)
+  nvidia-prime.nix    #   PRIME offload for hybrid iGPU+dGPU laptops
   laptop.nix          #   TLP, upower, brightnessctl, udev AC events
   vm.nix              #   qemu-guest-agent, spice
 modules/system/       # boot, networking, locale, users, audio, bluetooth,

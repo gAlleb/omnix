@@ -3,15 +3,18 @@
 > Goal: a system you bring up with
 > `sudo nixos-rebuild switch --flake .#<host>`.
 
-Five default hosts are defined:
+Eight default hosts are defined:
 
 | Host | When to use |
 |---|---|
-| `.#omnix-vm`            | Proxmox / QEMU VM (BIOS, qemu-guest-agent, spice). |
-| `.#omnix-intel-laptop`  | Intel iGPU laptop (TLP, intel-media-driver, brightnessctl). |
-| `.#omnix-intel-desktop` | Intel iGPU desktop (no battery management). |
-| `.#omnix-amd-laptop`    | AMD GPU laptop (TLP, amdvlk). |
-| `.#omnix-amd-desktop`   | AMD GPU desktop. |
+| `.#omnix-vm`                  | Proxmox / QEMU VM (BIOS, qemu-guest-agent, spice). |
+| `.#omnix-intel-laptop`        | Intel iGPU laptop (TLP, intel-media-driver, brightnessctl). |
+| `.#omnix-intel-desktop`       | Intel iGPU desktop (no battery management). |
+| `.#omnix-amd-laptop`          | AMD GPU laptop (TLP, amdvlk). |
+| `.#omnix-amd-desktop`         | AMD GPU desktop. |
+| `.#omnix-nvidia-intel-laptop` | Intel CPU + NVIDIA dGPU laptop (PRIME offload, Intel iGPU primary). |
+| `.#omnix-nvidia-amd-laptop`   | AMD CPU + NVIDIA dGPU laptop (PRIME offload, AMD iGPU primary). |
+| `.#omnix-nvidia-desktop`      | Discrete NVIDIA desktop (Intel or AMD CPU — doesn't matter for the GPU stack). |
 
 Plus **custom hosts** — type any other hostname at the phase1 prompt
 and phase2 will create `hosts/<your-name>/` from scratch (three files
@@ -21,11 +24,18 @@ Useful if you want `hosts/my-thinkpad/` instead of
 
 How a host gets its drivers: each `hosts/<host>/variables.nix` has a
 `profile = "..."` field (one of: `vm`, `intel-laptop`, `intel-desktop`,
-`amd-laptop`, `amd-desktop`). `flake.nix` auto-discovers every
-subdirectory under `hosts/` via `builtins.readDir` and feeds the
-profile from variables.nix to `mkHost`. The profile under
-`profiles/<x>/default.nix` then imports the host config, `modules/system`,
-`modules/drivers`, and flips on the right `drivers.{intel,amd,laptop,vm}.enable`.
+`amd-laptop`, `amd-desktop`, `nvidia-intel-laptop`, `nvidia-amd-laptop`,
+`nvidia-desktop`). `flake.nix` auto-discovers every subdirectory under
+`hosts/` via `builtins.readDir` and feeds the profile from
+variables.nix to `mkHost`. The profile under `profiles/<x>/default.nix`
+then imports the host config, `modules/system`, `modules/drivers`, and
+flips on the right `drivers.{intel,amd,nvidia,nvidia-prime,laptop,vm}.enable`.
+
+For `nvidia-intel-laptop` and `nvidia-amd-laptop`, variables.nix also
+holds `igpuBusID` and `nvidiaBusID` (PCI:D:S:F form) — NVIDIA PRIME
+needs them to wire offload to the right cards. phase1/phase2
+autodetect both via `lspci`; you can verify with
+`lspci | grep -E "VGA|3D"` (bus address `01:00.0` → `PCI:1:0:0`).
 
 The host's `default.nix` reads everything machine-specific from its
 own `variables.nix`: `bootMode` (uefi/bios), `biosDevice`, `swapSize`,
@@ -122,8 +132,9 @@ It asks:
 
 | Question | Default | Notes |
 |---|---|---|
-| Host name | auto-detected | lspci + battery probe → suggests one of the 5 default hosts. Type a different name for a custom host. |
-| Profile (custom only) | auto-detected | Only asked if the host name isn't one of the 5 defaults. |
+| Host name | auto-detected | lspci + battery + NVIDIA-probe → suggests one of the 8 default hosts. Type a different name for a custom host. |
+| Profile (custom only) | auto-detected | Only asked if the host name isn't one of the 8 defaults. |
+| iGPU + NVIDIA bus IDs (PRIME only) | auto-detected | Only asked for `nvidia-intel-laptop` / `nvidia-amd-laptop`. Phase1 reads lspci and converts `01:00.0` → `PCI:1:0:0`. |
 | Boot mode | `uefi` | `bios` for legacy installs. Even VMs can use either — Proxmox OVMF works. |
 | Disk for GRUB | `/dev/sda` | BIOS only |
 | Swap size in MiB | `4096` (vm) / `8192` (others) | Saved into `variables.nix` as `swapSize`. Edit anytime + rebuild. |
