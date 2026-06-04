@@ -177,16 +177,7 @@ case "$PROFILE" in
     ;;
 esac
 
-# Auto-detect boot mode the same way phase2 does: presence of
-# /sys/firmware/efi/efivars is authoritative proof the kernel booted
-# UEFI. Works on the install ISO too — if the VM/machine firmware is
-# SeaBIOS the ISO comes up in BIOS mode and this caches the right
-# default for the prompt.
-DETECTED_BOOT=uefi
-if [ ! -d /sys/firmware/efi/efivars ]; then
-  DETECTED_BOOT=bios
-fi
-BOOT=$(ask "Boot mode (uefi | bios)" "$DETECTED_BOOT")
+BOOT=$(ask "Boot mode (uefi | bios)" "uefi")
 case "$BOOT" in
   uefi|bios) ;;
   *) echo "Unknown boot mode: $BOOT" >&2; exit 1 ;;
