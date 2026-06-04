@@ -21,6 +21,18 @@
       description = "Disk to install GRUB on when omnix.profile.bios = true.";
     };
 
+    bootLoader = lib.mkOption {
+      type = lib.types.enum [ "grub" "systemd-boot" ];
+      default = "grub";
+      description = ''
+        UEFI boot loader: "grub" (default, universal, supports BIOS
+        chainload of Windows via os-prober) or "systemd-boot" (smaller,
+        auto-detects any other UEFI OS that has its .efi in the same
+        ESP — handy for Linux+Linux dual-boot).
+        Ignored on BIOS hosts — GRUB is always used there.
+      '';
+    };
+
     extras = lib.mkOption {
       type = lib.types.bool;
       default = false;

@@ -16,6 +16,7 @@
 
   # Swap file size in MiB. 8 GiB lets hibernation work on most setups.
   swapSize = 8192;
+  bootLoader = "grub";
 
   fullName  = "user";
   email     = "user@localhost";

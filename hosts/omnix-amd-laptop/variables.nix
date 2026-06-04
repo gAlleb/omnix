@@ -10,6 +10,7 @@
   biosDevice = "/dev/sda";
 
   swapSize = 8192;
+  bootLoader = "grub";
 
   fullName  = "user";
   email     = "user@localhost";
