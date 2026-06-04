@@ -298,6 +298,13 @@ $BOOT_BLOCK
 
   environment.systemPackages = with pkgs; [ git vim ];
 
+  # Pre-seed the swapfile already at nixos-install time so the first
+  # post-install boot has swap. phase2's flake config declares the
+  # same /swapfile with the same size, so there's no re-create later.
+  swapDevices = [
+    { device = "/swapfile"; size = $SWAP_SIZE; }
+  ];
+
   system.stateVersion = "$STATE_VERSION";
 }
 EOF
