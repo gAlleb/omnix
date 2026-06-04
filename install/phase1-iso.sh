@@ -188,6 +188,19 @@ if [ "$BOOT" = "bios" ]; then
   DISK=$(ask "Disk device for GRUB" "/dev/sda")
 fi
 
+# UEFI hosts can use either GRUB (universal, os-prober for Windows) or
+# systemd-boot (smaller, auto-detects any UEFI OS in the same ESP).
+# BIOS is GRUB-only — systemd-boot doesn't run on BIOS.
+if [ "$BOOT" = "uefi" ]; then
+  BOOT_LOADER=$(ask "UEFI loader (grub | systemd-boot)" "grub")
+  case "$BOOT_LOADER" in
+    grub|systemd-boot) ;;
+    *) echo "Unknown loader: $BOOT_LOADER" >&2; exit 1 ;;
+  esac
+else
+  BOOT_LOADER=grub
+fi
+
 # Swap size in MiB. VM defaults to 4 GiB; everything else to 8 GiB.
 case "$PROFILE" in
   vm) DEFAULT_SWAP=4096 ;;
@@ -223,8 +236,14 @@ echo "==> Hashing password with mkpasswd"
 HASHED_PW=$(printf '%s' "$PW1" | nix-shell -p mkpasswd --run "mkpasswd -m sha-512 -s")
 unset PW1 PW2
 
-# Boot loader block — UEFI vs BIOS
-if [ "$BOOT" = "uefi" ]; then
+# Boot loader block — three cases:
+#   BIOS                       → GRUB on a raw device (omnix-vm legacy install)
+#   UEFI + grub                → GRUB EFI (universal, os-prober for Windows)
+#   UEFI + systemd-boot        → systemd-boot (auto-detects ESP entries)
+if [ "$BOOT" = "uefi" ] && [ "$BOOT_LOADER" = "systemd-boot" ]; then
+  BOOT_BLOCK='  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;'
+elif [ "$BOOT" = "uefi" ]; then
   BOOT_BLOCK='  boot.loader.systemd-boot.enable = false;
   boot.loader.grub = {
     enable = true;
@@ -289,6 +308,7 @@ OMNIX_HOST=$HOST
 OMNIX_PROFILE=$PROFILE
 OMNIX_BOOT_MODE=$BOOT
 OMNIX_BIOS_DEVICE=$DISK
+OMNIX_BOOT_LOADER=$BOOT_LOADER
 OMNIX_SWAP_SIZE=$SWAP_SIZE
 OMNIX_IGPU_BUS_ID=$IGPU_BUS_ID
 OMNIX_NVIDIA_BUS_ID=$NVIDIA_BUS_ID

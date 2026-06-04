@@ -28,6 +28,7 @@ ENV_FILE=/etc/omnix-install.env
 DEFAULT_HOST=omnix-vm
 DEFAULT_PROFILE=vm
 DEFAULT_SWAP_SIZE=8192
+DEFAULT_BOOT_LOADER=grub
 DEFAULT_IGPU_BUS_ID="PCI:0:2:0"
 DEFAULT_NVIDIA_BUS_ID="PCI:1:0:0"
 DEFAULT_TIMEZONE="Europe/Moscow"
@@ -43,6 +44,7 @@ if [ -r "$ENV_FILE" ]; then
   DEFAULT_HOST=${OMNIX_HOST:-$DEFAULT_HOST}
   DEFAULT_PROFILE=${OMNIX_PROFILE:-$DEFAULT_PROFILE}
   DEFAULT_SWAP_SIZE=${OMNIX_SWAP_SIZE:-$DEFAULT_SWAP_SIZE}
+  DEFAULT_BOOT_LOADER=${OMNIX_BOOT_LOADER:-$DEFAULT_BOOT_LOADER}
   DEFAULT_IGPU_BUS_ID=${OMNIX_IGPU_BUS_ID:-$DEFAULT_IGPU_BUS_ID}
   DEFAULT_NVIDIA_BUS_ID=${OMNIX_NVIDIA_BUS_ID:-$DEFAULT_NVIDIA_BUS_ID}
   DEFAULT_TIMEZONE=${OMNIX_TIMEZONE:-$DEFAULT_TIMEZONE}
@@ -143,6 +145,20 @@ if [ "$BOOT_MODE" = "bios" ] && [ -z "${OMNIX_BIOS_DEVICE:-}" ]; then
   echo "==> Assuming biosDevice = $BIOS_DEVICE — edit hosts/$HOST/variables.nix if your GRUB disk is different."
 fi
 
+# bootLoader is also silently carried from env (or defaults to grub).
+# Not asked — switching loaders after install is a sensitive change
+# (e.g. systemd-boot on a small ESP can fail to fit NixOS kernels).
+# Users edit hosts/<host>/variables.nix and rebuild to switch.
+BOOT_LOADER=${OMNIX_BOOT_LOADER:-grub}
+case "$BOOT_LOADER" in
+  grub|systemd-boot) ;;
+  *) echo "Unknown boot loader: $BOOT_LOADER" >&2; exit 1 ;;
+esac
+if [ "$BOOT_MODE" = "bios" ] && [ "$BOOT_LOADER" != "grub" ]; then
+  echo "==> BIOS host: forcing bootLoader=grub (systemd-boot doesn't run on BIOS)"
+  BOOT_LOADER=grub
+fi
+
 SWAP_SIZE=$(ask "Swap size in MiB" "$DEFAULT_SWAP_SIZE")
 if [[ ! "$SWAP_SIZE" =~ ^[0-9]+$ ]]; then
   echo "Invalid swap size: $SWAP_SIZE" >&2; exit 1
@@ -170,6 +186,7 @@ OMNIX_HOST=$HOST
 OMNIX_PROFILE=$PROFILE
 OMNIX_BOOT_MODE=$BOOT_MODE
 OMNIX_BIOS_DEVICE=$BIOS_DEVICE
+OMNIX_BOOT_LOADER=$BOOT_LOADER
 OMNIX_SWAP_SIZE=$SWAP_SIZE
 OMNIX_IGPU_BUS_ID=$IGPU_BUS_ID
 OMNIX_NVIDIA_BUS_ID=$NVIDIA_BUS_ID
@@ -250,6 +267,7 @@ PRIMEEOF
 
   bootMode   = "$BOOT_MODE";
   biosDevice = "$BIOS_DEVICE";
+  bootLoader = "$BOOT_LOADER";
   swapSize   = $SWAP_SIZE;$PRIME_BLOCK
 
   fullName  = "$FULL_NAME";
