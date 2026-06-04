@@ -28,6 +28,8 @@ ENV_FILE=/etc/omnix-install.env
 DEFAULT_HOST=omnix-vm
 DEFAULT_PROFILE=vm
 DEFAULT_SWAP_SIZE=8192
+DEFAULT_IGPU_BUS_ID="PCI:0:2:0"
+DEFAULT_NVIDIA_BUS_ID="PCI:1:0:0"
 DEFAULT_TIMEZONE="Europe/Moscow"
 DEFAULT_LAN_SUBNET=192.168.1.0/24
 DEFAULT_EXTRAS=false
@@ -41,6 +43,8 @@ if [ -r "$ENV_FILE" ]; then
   DEFAULT_HOST=${OMNIX_HOST:-$DEFAULT_HOST}
   DEFAULT_PROFILE=${OMNIX_PROFILE:-$DEFAULT_PROFILE}
   DEFAULT_SWAP_SIZE=${OMNIX_SWAP_SIZE:-$DEFAULT_SWAP_SIZE}
+  DEFAULT_IGPU_BUS_ID=${OMNIX_IGPU_BUS_ID:-$DEFAULT_IGPU_BUS_ID}
+  DEFAULT_NVIDIA_BUS_ID=${OMNIX_NVIDIA_BUS_ID:-$DEFAULT_NVIDIA_BUS_ID}
   DEFAULT_TIMEZONE=${OMNIX_TIMEZONE:-$DEFAULT_TIMEZONE}
   DEFAULT_LAN_SUBNET=${OMNIX_LAN_SUBNET:-$DEFAULT_LAN_SUBNET}
   DEFAULT_EXTRAS=${OMNIX_EXTRAS:-$DEFAULT_EXTRAS}
@@ -78,7 +82,7 @@ if [[ ! "$HOST" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
 fi
 
 case "$HOST" in
-  omnix-vm|omnix-intel-laptop|omnix-intel-desktop|omnix-amd-laptop|omnix-amd-desktop)
+  omnix-vm|omnix-intel-laptop|omnix-intel-desktop|omnix-amd-laptop|omnix-amd-desktop|omnix-nvidia-intel-laptop|omnix-nvidia-amd-laptop|omnix-nvidia-desktop)
     # Default host — profile follows the suffix.
     PROFILE="${HOST#omnix-}"
     ;;
@@ -87,11 +91,26 @@ case "$HOST" in
     echo ""
     echo "Custom host '$HOST'. Which hardware profile should it use?"
     echo "  vm | intel-laptop | intel-desktop | amd-laptop | amd-desktop"
+    echo "  nvidia-intel-laptop | nvidia-amd-laptop | nvidia-desktop"
     PROFILE=$(ask "Profile" "$DEFAULT_PROFILE")
     case "$PROFILE" in
-      vm|intel-laptop|intel-desktop|amd-laptop|amd-desktop) ;;
+      vm|intel-laptop|intel-desktop|amd-laptop|amd-desktop|nvidia-intel-laptop|nvidia-amd-laptop|nvidia-desktop) ;;
       *) echo "Unknown profile: $PROFILE" >&2; exit 1 ;;
     esac
+    ;;
+esac
+
+# nvidia-*-laptop profiles need PRIME bus IDs in variables.nix.
+# Defaults come from phase1 autodetect (in env); user can edit at prompt.
+IGPU_BUS_ID=""
+NVIDIA_BUS_ID=""
+case "$PROFILE" in
+  nvidia-intel-laptop|nvidia-amd-laptop)
+    echo ""
+    echo "NVIDIA PRIME needs iGPU + dGPU PCI bus IDs."
+    echo "(Verify with 'lspci | grep -E \"VGA|3D\"'; 01:00.0 → PCI:1:0:0.)"
+    IGPU_BUS_ID=$(ask  "iGPU bus ID"   "$DEFAULT_IGPU_BUS_ID")
+    NVIDIA_BUS_ID=$(ask "NVIDIA bus ID" "$DEFAULT_NVIDIA_BUS_ID")
     ;;
 esac
 
@@ -152,6 +171,8 @@ OMNIX_PROFILE=$PROFILE
 OMNIX_BOOT_MODE=$BOOT_MODE
 OMNIX_BIOS_DEVICE=$BIOS_DEVICE
 OMNIX_SWAP_SIZE=$SWAP_SIZE
+OMNIX_IGPU_BUS_ID=$IGPU_BUS_ID
+OMNIX_NVIDIA_BUS_ID=$NVIDIA_BUS_ID
 OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET
@@ -204,6 +225,20 @@ NIX
   fi
 
   echo "==> Writing $REPO/hosts/$HOST/variables.nix"
+  # PRIME bus IDs are only emitted for nvidia-laptop profiles; the
+  # profiles that don't use PRIME wouldn't read them anyway.
+  PRIME_BLOCK=""
+  case "$PROFILE" in
+    nvidia-intel-laptop|nvidia-amd-laptop)
+      PRIME_BLOCK=$(cat <<PRIMEEOF
+
+  igpuBusID   = "$IGPU_BUS_ID";
+  nvidiaBusID = "$NVIDIA_BUS_ID";
+PRIMEEOF
+)
+      ;;
+  esac
+
   cat > "$REPO/hosts/$HOST/variables.nix" <<EOF
 {
   username  = "$USERNAME";
@@ -215,7 +250,7 @@ NIX
 
   bootMode   = "$BOOT_MODE";
   biosDevice = "$BIOS_DEVICE";
-  swapSize   = $SWAP_SIZE;
+  swapSize   = $SWAP_SIZE;$PRIME_BLOCK
 
   fullName  = "$FULL_NAME";
   email     = "$EMAIL";
