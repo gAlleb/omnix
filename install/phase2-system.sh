@@ -233,6 +233,7 @@ in
   omnix.profile.extras     = vars.extras;
   omnix.profile.bios       = vars.bootMode == "bios";
   omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
+  omnix.profile.bootLoader = vars.bootLoader or "grub"; 
 
   swapDevices = [
     { device = "/swapfile"; size = vars.swapSize; }   # MiB
