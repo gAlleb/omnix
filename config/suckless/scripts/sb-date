@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+source ~/.cache/wal/dwmblocks
+echo "^c$color0^^b$color3^ $(date '+%a, %b %d %H:%M') ^d^"

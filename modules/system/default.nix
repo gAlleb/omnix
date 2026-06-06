@@ -17,5 +17,6 @@
     ./packages.nix
     ./nix.nix
     ./ssh.nix
+    ./dwm-session.nix
   ];
 }

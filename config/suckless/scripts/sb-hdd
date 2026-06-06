@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+source ~/.cache/wal/dwmblocks
+#hdd="$(df -h | awk 'NR==5{print $3, $5}')"
+hdd="$(df -h | awk 'NR==5{print $3}')"
+icon=""
+printf "%s  %s\\n" "$icon" "$hdd"

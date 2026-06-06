@@ -8,5 +8,7 @@ in
     sfpro-display
     photogimp-config
     omnix-scripts
-    wal-telegram;
+    wal-telegram
+    my-dwm
+    dwmblocks-async;
 }

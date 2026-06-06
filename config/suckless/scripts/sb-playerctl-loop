@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+playerctl --all-players --follow metadata --format '{{status}} {{title}} {{artist}}' | while read -r line; do
+    # When playerctl detects a change in status or title it sends pkill to dwmblock
+   pkill -RTMIN+15 "${STATUSBAR:-dwmblocks}"
+done

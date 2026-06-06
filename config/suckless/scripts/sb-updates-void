@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# Define the icon and state file path
+icon=""
+state_file="/tmp/dwmblocks-sb-updates-void-state"
+
+# --- Initialization: Create state file if it doesn't exist ---
+# On boot, this will run and set the default to "icon_only"
+if [ ! -f "$state_file" ]; then
+    echo "icon_only" > "$state_file"
+fi
+
+# --- Click Handler ---
+# This part only runs when a click is detected by dwmblocks
+case $BLOCK_BUTTON in
+    1)
+        # Check the current state and toggle it by rewriting the state file
+        if [ "$(cat "$state_file")" = "icon_only" ]; then
+            echo "full" > "$state_file"
+        else
+            echo "icon_only" > "$state_file"
+        fi
+        ;;
+esac
+
+# --- Display Logic ---
+# First, read the current state from the file
+current_state=$(cat "$state_file")
+
+# Now, only run the expensive command if the state is "full"
+if [ "$current_state" = "full" ]; then
+    # Get the update count (this is the slow part)
+    update_count=$(xbps-install --memory-sync --dry-run --update | grep -Fe update -e install | wc -l)
+    # Print the icon and the count
+    printf "%s  %s\n" "$icon" " $update_count"
+else
+    # If the state is "icon_only", just print the icon and exit.
+    # The expensive command is never run in this case.
+    printf "%s " "$icon"
+fi

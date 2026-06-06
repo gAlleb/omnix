@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+case $BLOCK_BUTTON in
+  1) maim ~/Pictures/$(date +%Y%m%d_%H%M%S).png && notify-send "Screenshot is saved to ~/Pictures" ;;
+  3) maim | xclip -selection clipboard -t image/png && notify-send "Screenshot is copied to clipboard" ;;
+	3) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac
+
+echo " "

@@ -40,9 +40,6 @@
     pciutils      # lspci, lspci -k
     usbutils      # lsusb
 
-    # terminfo entries for terminals you may SSH from
-    # (alacritty/kitty/ghostty/wezterm — so PS1 renders correctly
-    # in remote sessions; otherwise wide-glyph handling can degrade)
     alacritty.terminfo
     kitty.terminfo
     foot.terminfo

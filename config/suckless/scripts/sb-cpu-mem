@@ -1,0 +1,45 @@
+#!/usr/env/bin bash
+black=#21222c
+green=#50fa7b
+white=#f8f8f2
+grey=#282a36
+blue=#d6acff
+red=#ff5555
+darkblue=#bd93f9
+
+source ~/.cache/wal/dwmblocks
+
+mem(){
+mem="$(free -m | awk 'NR==2{printf "%s", $3,$2,$3*100/$2 }')"
+icon=" "
+#printf "^c$color4^$icon%s""$mem""mb ^d^"
+#printf "^c#ff0000^ ^b#000000^$icon%s" " $mem% ^d^"
+printf "$icon %s""$mem""mb"
+
+# printf "^c$blue^ $(free -h | awk '/^Mem/ { print $3 }' | sed s/i//g)"
+
+}
+
+cpu(){
+  read cpu a b c previdle rest < /proc/stat
+  prevtotal=$((a+b+c+previdle))
+  sleep 0.5
+  read cpu a b c idle rest < /proc/stat
+  total=$((a+b+c+idle))
+  cpu=$((100*( (total-prevtotal) - (idle-previdle) ) / (total-prevtotal) ))
+  icon="  "
+#    printf "^c#ff0000^ ^b#000000^$icon %s" "$cpu%%^d^"
+#    printf "^c$green^$icon%s" "$cpu%% ^d^"
+     printf "$icon %s" "$cpu%%"
+}
+
+case $BLOCK_BUTTON in
+    1) setsid -f $TERMINAL -e top ;;
+    3) notify-send "top" ;;
+esac
+
+#printf " $(mem)" 
+
+MEM_USE=$(free -m | awk '/^Mem/ {printf "%.1f", ($3)/1024}')
+printf "^c$color0^^b$color4^$(cpu)     ${MEM_USE}Gb ^d^"
+

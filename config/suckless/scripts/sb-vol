@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+function get_volume {
+  pactl get-sink-volume @DEFAULT_SINK@ | grep -Po '[0-9]+(?=%)' | head -1
+}
+
+function is_muted {
+  pactl get-sink-mute @DEFAULT_SINK@ | grep -q 'yes'
+}
+
+function get_icon {
+  if is_muted; then
+    echo ""
+    return
+  fi
+
+  if [ $volume == "0" ]; then
+    echo ""
+    return
+  fi
+
+  if [ $volume -lt "25" ]; then
+    echo ""
+    return
+  fi
+
+  if [ $volume -lt "50" ]; then
+    echo ""
+    return
+  fi
+
+  if [ $volume -lt "75" ]; then
+    echo ""
+    return
+  else
+    echo ""
+  fi
+}
+
+function main {
+  volume=$(get_volume)
+  if is_muted; then
+  echo  "$(get_icon)  "
+  else
+  echo "$(get_icon)   $volume%"
+  fi
+}
+
+
+case $BLOCK_BUTTON in
+        5) ~/.config/suckless/scripts/volume.sh up ;;
+        4) ~/.config/suckless/scripts/volume.sh down ;;
+        1) ~/.config/suckless/scripts/volume.sh toggle ;;
+        2) pavucontrol ;;
+        3) omvoid-audioswitcher
+esac
+
+# kill -39 $(pidof dwmblocks) 
+# +35 to signal number or 
+# pkill -RTMIN+5 dwmblocks
+
+echo "$(main)"

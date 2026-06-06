@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+#VPN_INTERFACE_NAME="${1:?Error: an interface name must be provided as the first argument}"
+
+
+
+if [[ $(ip a | grep wg0 | grep -c inet) -eq 1 ]]; then
+  printf "    "
+elif [[ $(ip a | grep wg0 | grep -c inet) -eq 0 ]]; then
+  printf "  "
+else
+  echo "Unexpected output from ip a"
+fi
+
+# Clicking on bar
+case $BLOCK_BUTTON in
+		1) setsid -w -f alacritty --title=nmtui -o window.dimensions.columns=100 -o window.dimensions.lines=30 -e nmtui ;;
+	#	3) notify-send -t 10000 -h string:bgcolor:$COLOR Stats "$CPU_USE\n\nGPU: $GPU_TEMP°C\n\nFan Speed: $FAN_SPEED" ;;
+		2) setsid -f "$TERMINAL" -e "$EDITOR" "$0" ;;
+esac

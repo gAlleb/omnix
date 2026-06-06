@@ -47,7 +47,7 @@
     '';
 
     profileExtra = ''
-      export PATH="$PATH:$HOME/.local/bin:$HOME/scripts:$HOME/.local/share/omnix/bin"
+      export PATH="$PATH:$HOME/.local/bin:$HOME/scripts:$HOME/.config/suckless/scripts:$HOME/.local/share/omnix/bin"
     '';
   };
 

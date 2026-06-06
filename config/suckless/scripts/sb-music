@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+# playerctl loop ensures that when a track is skipped in the music player itself, it still updates on bar
+#pidof -x "sb-playerctl-loop"  >/dev/null 2>&1 || sb-playerctl-loop >/dev/null 2>&1 &
+#pgrep -f "sb-playerctl-loop" >/dev/null 2>&1 || sb-playerctl-loop >/dev/null 2>&1 &
+# format state to alternate between artist - title and album - title
+FORMAT_FILE="/tmp/dwmblocks_mus_format"
+[ ! -f "$FORMAT_FILE" ] && echo "0" > "$FORMAT_FILE"
+read FORMAT < "$FORMAT_FILE"
+
+# priority is: if browser or mpv are playing, they will display. otherwise, mpd displays, playing or paused.
+# browser and mpv should never display if paused.
+if [ -z "$MUSIC_PLAYING_PLAYERS" ]; then
+	# if MUSIC_PLAYING_PLAYERS is not set, use the default players
+	MUSIC_PLAYING_PLAYERS="firefox chromium de.haeckerfelix.Shortwave strawberry mpd mpv"
+fi
+
+[ "$FORMAT" -eq 0 ] && META="{{ trunc(title,20) }}" || META="{{ trunc(artist,17) }} - {{ trunc(title,17) }}" 
+
+# Flag to check if we've displayed anything playing
+PLAYING_FOUND=0
+
+for PLAYER in $MUSIC_PLAYING_PLAYERS; do
+# if the player is not playing, continue to the next player, until we find one that is playing
+	if [ "$(playerctl --player=$PLAYER status 2>/dev/null)" = "Playing" ]; then
+    if [ "$PLAYER" = "firefox" ]; then
+      ICON="󰖟 "
+   else
+		  ICON=" "
+    fi
+		echo "$ICON" $(playerctl metadata --player $PLAYER --format "$META")
+		PLAYING_FOUND=1
+    CURRENT_PLAYER="$PLAYER"
+		break # Exit the loop as we found a playing track
+	fi
+done
+
+# If no playing track was found, then display what's paused in mpd
+if [ "$PLAYING_FOUND" -eq 0 ]; then
+    # Check if mpd is actually paused or stopped
+    MPD_STATUS=$(playerctl --player=mpd status 2>/dev/null)
+    if [ "$MPD_STATUS" = "Paused" ] || [ "$MPD_STATUS" = "Stopped" ]; then
+        ICON=" "
+        echo "$ICON" $(playerctl metadata --player mpd --format "$META")
+        CURRENT_PLAYER="mpd"
+    fi
+fi
+
+radio() {
+    MPV_STATUS=$(playerctl --player=mpv status 2>/dev/null)
+    SHORTWAVE=$(playerctl --player=de.haeckerfelix.Shortwave status 2>/dev/null)
+    if [ "$MPV_STATUS" = "Playing" ]; then
+       pkill -f http    
+       notify-send "Stopping radio" "You have quit radio. 🎶"
+    elif [ "$SHORTWAVE" = "Playing" ]; then
+       shortwave
+    elif [ "$(playerctl --player $CURRENT_PLAYER status)" = "Playing" ]; then
+       playerctl --player $CURRENT_PLAYER play-pause
+    else
+       playerctl --player mpd play-pause
+    fi
+}
+
+case $BLOCK_BUTTON in
+		3) setsid -f kitty -e -o initial_window_width=550 -o initial_window_height=600 --title=rmpc rmpc ;;
+    1) radio ;;
+#		3) notify-send "$(playerctl metadata --player $CURRENT_PLAYER --format "Now Playing: {{ title }} - {{ artist }}")" ;; 
+		2)
+            # Use CURRENT_PLAYER for notify-send
+            if [ -n "$CURRENT_PLAYER" ]; then # Check if a player was identified
+                TITLE_FORMAT="{{ title }}"
+                ARTIST_FORMAT="{{ artist }}"
+                ALBUM_FORMAT="{{ album }}"
+
+                NOTIF_TITLE="$(playerctl metadata --player "$CURRENT_PLAYER" --format "$TITLE_FORMAT")"
+                NOTIF_BODY="Artist: $(playerctl metadata --player "$CURRENT_PLAYER" --format "$ARTIST_FORMAT")\nAlbum: $(playerctl metadata --player "$CURRENT_PLAYER" --format "$ALBUM_FORMAT")"
+
+                notify-send \
+                    --icon=media-playback-start \
+                    "$NOTIF_TITLE" \
+                    "$NOTIF_BODY"
+            else
+                # Fallback if no player was found (e.g., nothing playing/paused)
+                notify-send "Music" "No player active."
+            fi
+            ;;
+  	4) echo "$(( ($FORMAT + 1) % 2 ))" > "$FORMAT_FILE" ;;
+  	5) echo "$(( ($FORMAT + 1) % 2 ))" > "$FORMAT_FILE" ;;
+  	6) setsid -f alacritty -e "$EDITOR" "$0" ;;	
+esac

@@ -73,13 +73,6 @@
     rofi
     libnotify
 
-    # ── X11 fallback tools ───────────────────────────────────────
-    xclip
-    xsel
-    xdotool
-    maim
-    slop
-
     # ── Audio utility deps (для bin/omnix-cmd-*) ─────────────────
     ffmpeg
 

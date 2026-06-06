@@ -11,6 +11,7 @@
     ./xdg.nix
     ./photogimp.nix
     ./mpd.nix
+    ./xresources.nix
    #./rclone.nix
   ];
 

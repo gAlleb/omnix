@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+function powermenu {
+	options="Cancel\nShutdown\nReboot\nSleep\nLock"
+	selected=$(echo -e $options | rofi -dmenu -theme ~/.config/rofi/menu-style-minimal.rasi)
+	if [[ $selected = "Shutdown" ]]; then
+		loginctl poweroff
+	elif [[ $selected = "Reboot" ]]; then
+		loginctl reboot
+	elif [[ $selected = "Sleep" ]]; then
+		loginctl suspend
+	elif [[ $selected = "Lock" ]]; then
+		slock
+	elif [[ $selected = "Shutdown" ]]; then
+		return
+	fi
+}
+powermenu
+
