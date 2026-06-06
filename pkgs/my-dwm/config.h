@@ -423,7 +423,7 @@ static const char *layoutmenu_cmd = "layoutmenu.sh";
 #if BAR_LAUNCHER_PATCH
 static const Launcher launchers[] = {
 	/* icon to display      command        */
-	{ "         ",               CMD("menu-launcher.sh", NULL) },	
+	{ "         ",               CMD("menu-launcher.sh", NULL) },	
 };
 #endif // BAR_LAUNCHER_PATCH
 
@@ -1066,12 +1066,12 @@ static const Key keys[] = {
   { MODKEY,			                  XK_w,          spawn,                  SHCMD("$HOME/.config/rofi/wallpaper/wallpaper.sh") },
   { MODKEY,			                  XK_t,          spawn,                  SHCMD("exec setsid -f kitty --title='😺 tmux 😺' -e tmux-start.sh")},
   { MODKEY,			                  XK_n,          spawn,                  SHCMD("rofi_notes.sh")},
-  { MODKEY,			                  XK_a,          spawn,                  SHCMD("omvoid-audioswitcher")},
+  { MODKEY,			                  XK_a,          spawn,                  SHCMD("omnix-audioswitcher")},
   { MODKEY,			                  XK_v,          spawn,                  SHCMD("env CM_LAUNCHER=rofi_clipboard.sh clipmenu")},
   { MODKEY,			                  XK_f,          spawn,                  SHCMD("nautilus")},
-  { MODKEY,			                  XK_b,          spawn,                  SHCMD("omvoid-launch-browser")},
+  { MODKEY,			                  XK_b,          spawn,                  SHCMD("omnix-launch-browser")},
   { MODKEY,			                  XK_q,          spawn,                  SHCMD("sb-powermenu-rofi")},
-  { MODKEY,			                  XK_r,          spawn,                  SHCMD("omvoid-cmd-radio")},
+  { MODKEY,			                  XK_r,          spawn,                  SHCMD("omnix-cmd-radio")},
 	/* modifier                     key            function                argument */
 	#if KEYMODES_PATCH
 	{ MODKEY,                       XK_Escape,     setkeymode,             {.ui = COMMANDMODE} },
