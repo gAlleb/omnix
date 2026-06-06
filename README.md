@@ -19,6 +19,9 @@
 
 <img width="800" alt="изображение" src="https://github.com/user-attachments/assets/a73049f9-0952-4c20-be6f-e733f8e5cce2" />
 
+> [!NOTE]
+> Hey, wait! DWM is also in the flake. With dwmblocks and all good stuff, ready for theme changes with ALT+W. Because we remember :)
+
 ## Quickstart
 
 Eight hardware-aware default hosts are ready out of the box:

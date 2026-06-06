@@ -235,7 +235,7 @@ If the build hits **`hash mismatch in fixed-output derivation`** in
 
 After the reboot triggered by phase 2 you get SDDM with the astronaut
 theme. Pick the **MangoWC** session, log in with the password you set
-during phase 1.
+during phase 1. After initial login into **Mango** you can use **DWM** session as well. Oh, my! And **DWM** is beautiful! 
 
 ---
 

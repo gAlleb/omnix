@@ -39,7 +39,7 @@ showweather() {
 }
 
 case $BLOCK_BUTTON in
-	1) setsid -f st -e less -Sfr "$weatherreport" ;;
+	1) setsid -f alacritty -e less -Sfr "$weatherreport" ;;
 	2) get_new_forecast && getforecast && showweather ;;
 	3) notify-send "🌈 Weather module" "\- Left click for full forecast.
 - Middle click to update forecast.
