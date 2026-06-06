@@ -19,7 +19,6 @@ let
     # "mako"   — notification daemon not currently installed
     "mango"
     # "mpd"    — управляется home-manager (services.mpd) -> см. примечание ниже
-    "mpv"
     "nvim"
     "nwg-dock-hyprland"
     "picom"

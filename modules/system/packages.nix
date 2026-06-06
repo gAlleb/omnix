@@ -29,7 +29,9 @@
     neovim
     nano
     less
-
+    
+    mpv
+    mpvScripts.mpris
     # info / diag
     fastfetch
     tldr

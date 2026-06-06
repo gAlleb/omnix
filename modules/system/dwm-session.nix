@@ -36,8 +36,8 @@ let
       -time 5 -locker ${pkgs.slock}/bin/slock -nowlocker ${pkgs.slock}/bin/slock \
       -detectsleep -corners 000+ -cornerdelay 3 &
 
-    # Status bar и custom скрипты для dwmblocks
-    pkill -f sb-playerctl-loop || true
+    pgrep -f "sb-playerctl-loop" | xargs kill || true
+    sb-playerctl-loop &
 
     # Status bar
     ${pkgs.dwmblocks-async}/bin/dwmblocks &

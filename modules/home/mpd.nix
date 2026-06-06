@@ -34,13 +34,14 @@ in
     Unit = {
       Description = "MPRIS2 D-Bus bridge for MPD";
       After = [ "mpd.service" ];
+      Requires = [ "mpd.service" ]; 
       PartOf = [ "mpd.service" ];
     };
 
     Service = {
       ExecStart = "${pkgs.mpdris2-rs}/bin/mpdris2-rs";
       Restart = "on-failure";
-      RestartSec = 2;
+      RestartSec = 10;
     };
 
     Install.WantedBy = [ "default.target" ];

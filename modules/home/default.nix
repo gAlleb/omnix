@@ -12,6 +12,7 @@
     ./photogimp.nix
     ./mpd.nix
     ./xresources.nix
+    ./mpv.nix
    #./rclone.nix
   ];
 
