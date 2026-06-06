@@ -18,13 +18,12 @@
 
 // Define blocks for the status feed as X(icon, cmd, interval, signal).
 #define BLOCKS(X)             \
-    X("", "/home/stefan/.config/suckless/scripts/sb-music", 0, 15)  \
+    X("", "sb-music", 0, 15)  \
     X("", "sb-cpu-mem", 10, 4)   \
     X("", "sb-hdd", 60, 1) \
     X("", "sb-temp", 20, 3) \
     X("", "sb-forecast", 18000, 5) \
     X("", "sb-lang", 1, 6)     \
-    X("", "sb-updates-void", 18000, 7)  \
     X("", "sb-batt", 60, 8)  \
     X("", "sb-brightness", 0, 10)  \
     X("", "sb-screenshot", 0, 12)  \

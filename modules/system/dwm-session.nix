@@ -60,12 +60,12 @@ in
   };
 
   programs.slock.enable = true;
-  picom.enable = true;
 
   # Пакеты в систему, чтобы они были видны во время X-сессии.
   environment.systemPackages = with pkgs; [
     my-dwm
     dwmblocks-async
+    picom
     xwallpaper
     libinput-gestures
     caffeine-ng

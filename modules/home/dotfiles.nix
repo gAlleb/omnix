@@ -22,6 +22,7 @@ let
     "mpv"
     "nvim"
     "nwg-dock-hyprland"
+    "picom"
     "rmpc"
     "rofi"
     "senpai"
@@ -29,6 +30,7 @@ let
     "swaylock"
     # "swaync" — notification daemon not currently installed
     "swayosd"
+    "suckless"
     "wal"
     "walker"
     "wallpaper"
