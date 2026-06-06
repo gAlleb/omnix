@@ -8,11 +8,11 @@ let
 
     ${pkgs.systemd}/bin/systemctl --user start mpd.service mpdris2-rs.service 2>/dev/null || true    
 
-    ${pkgs.xorg.xrdb}/bin/xrdb -merge $HOME/.Xresources 2>/dev/null || true
+    ${pkgs.xrdb}/bin/xrdb -merge $HOME/.Xresources 2>/dev/null || true
 
     # Раскладки + Compose
-    ${pkgs.xorg.setxkbmap}/bin/setxkbmap us,ru -option grp:win_space_toggle
-    ${pkgs.xorg.setxkbmap}/bin/setxkbmap -option compose:caps
+    ${pkgs.setxkbmap}/bin/setxkbmap us,ru -option grp:win_space_toggle
+    ${pkgs.setxkbmap}/bin/setxkbmap -option compose:caps
 
     # Compositor (только если конфиг есть)
     if [ -f "$HOME/.config/picom/config.conf" ]; then

@@ -10,7 +10,7 @@ stdenv.mkDerivation {
     owner = "galleb";                       # ← подставь свой github username
     repo  = "dwm-flexipatch";               # ← название твоей репы
     rev   = "mysetup-omnix";                         # или конкретный commit hash для repro
-    sha256 = "sha256-vUfoyQyv655FGBE0NRW937DqO9PnEXgwk6YPuiq0Jcw=";                # ← первый build выдаст правильный, см. Шаг 6
+    sha256 = "sha256-xCoOyXHSaN1b1RTn3bbguyNtuVEGVTQJ9YRV2c79FiA="; # ← первый build выдаст правильный, см. Шаг 6
   };
 
   nativeBuildInputs = [ pkg-config ];
