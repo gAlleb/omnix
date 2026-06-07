@@ -10,6 +10,27 @@ let
 
     ${pkgs.xrdb}/bin/xrdb -merge $HOME/.Xresources 2>/dev/null || true
 
+    # XSETTINGS daemon — публикует GTK-тему через X Atom; GTK-приложения
+    # подхватывают смену вживую (omnix-theme-gnome-set-xorg правит conf + HUP).
+    # Конфиг mutable и персистентный, как ~/.config/Kvantum/kvantum.kvconfig.
+    mkdir -p "$HOME/.config/xsettingsd"
+    if [ ! -f "$HOME/.config/xsettingsd/xsettingsd.conf" ]; then
+      cat > "$HOME/.config/xsettingsd/xsettingsd.conf" <<'EOF'
+Net/ThemeName "WhiteSur-Dark"
+Net/IconThemeName "WhiteSur-red-dark"
+Gtk/CursorThemeName "WhiteSur-cursors"
+Gtk/CursorThemeSize 36
+Gtk/FontName "Noto Sans Semi-Bold 12"
+Gtk/ApplicationPreferDarkTheme 1
+Xft/Antialias 1
+Xft/Hinting 1
+Xft/HintStyle "hintslight"
+Xft/RGBA "rgb"
+EOF
+    fi
+
+    ${pkgs.xsettingsd}/bin/xsettingsd -c "$HOME/.config/xsettingsd/xsettingsd.conf" &
+
     # Раскладки + Compose
     ${pkgs.setxkbmap}/bin/setxkbmap us,ru -option grp:win_space_toggle
     ${pkgs.setxkbmap}/bin/setxkbmap -option compose:caps
@@ -81,5 +102,6 @@ in
     slop
     xclip
     maim
+    xsettingsd
   ];
 }

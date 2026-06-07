@@ -3,17 +3,17 @@
   gtk = {
     enable = true;
 
-    theme = {
-      name = "WhiteSur-Dark";
-      package = pkgs.whitesur-gtk-theme;
-    };
+    #theme = {
+    #  name = "WhiteSur-Dark";
+    #  package = pkgs.whitesur-gtk-theme;
+    #};
 
-    iconTheme = {
-      name = "WhiteSur-red-dark";
-      package = pkgs.whitesur-icon-theme.override {
-        themeVariants = [ "default" "grey" "purple" "red" "orange" ];
-      };
-    };
+    #iconTheme = {
+    #  name = "WhiteSur-red-dark";
+    #  package = pkgs.whitesur-icon-theme.override {
+    #    themeVariants = [ "default" "grey" "purple" "red" "orange" ];
+    #  };
+    #};
 
     cursorTheme = {
       name = "WhiteSur-cursors";
@@ -53,17 +53,14 @@
     };
   };
 
-  # ↓ КЛЮЧЕВАЯ ДВЕ СТРОКИ — даём home-manager'у тихо перезаписывать
-  # свои settings.ini без backup. omnix-theme-set потом перезатирает
-  # его в runtime через sed — конфликт устранён.
-  xdg.configFile."gtk-3.0/settings.ini".force = true;
-  xdg.configFile."gtk-4.0/settings.ini".force = true;
+  xdg.configFile."gtk-3.0/settings.ini".enable = false;
+  xdg.configFile."gtk-4.0/settings.ini".enable = false;
 
   dconf.settings = {
     "org/gnome/desktop/interface" = {
-      gtk-theme = "WhiteSur-Dark";
-      icon-theme = "WhiteSur-red-dark";
-      color-scheme = "prefer-dark";
+  #    gtk-theme = "WhiteSur-Dark";
+  #    icon-theme = "WhiteSur-red-dark";
+  #    color-scheme = "prefer-dark";
       cursor-theme = "WhiteSur-cursors";
     };
   };

@@ -61,8 +61,11 @@
     # ── Theming / tools ──────────────────────────────────────────
     pywal16
     waypaper
-    whitesur-icon-theme
+    #whitesur-icon-theme
     whitesur-gtk-theme
+    (pkgs.whitesur-icon-theme.override {
+        themeVariants = [ "default" "grey" "purple" "red" "orange" ];
+    })
 
     # ── nwg-* (раньше из кастомного void-repo) ───────────────────
     #nwg-dock-hyprland

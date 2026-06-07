@@ -1,44 +1,18 @@
 #!/usr/bin/env bash
-set -eu
 
-GTK3_THEME="$1"        # WhiteSur-Dark / WhiteSur-Light
-GTK3_ICONS="$2"        # WhiteSur-grey-dark / WhiteSur-light
-PREFER_DARK_THEME="$3" # 1 = dark, 0 = light
+# Configuration
+GTK3_THEME="$1"
+GTK3_ICONS="$2"
+PREFER_DARK_THEME="$3" # New variable for the dark theme preference
 
-# --- GNOME / libadwaita (GTK4) apps: dconf/gsettings ---
-gsettings set org.gnome.desktop.interface gtk-theme  "$GTK3_THEME"
-gsettings set org.gnome.desktop.interface icon-theme "$GTK3_ICONS"
+gsettings set org.gnome.desktop.interface gtk-theme $GTK3_THEME
+gsettings set org.gnome.desktop.interface icon-theme $GTK3_ICONS
+
 if [ "$PREFER_DARK_THEME" = "0" ]; then
-  gsettings set org.gnome.desktop.interface color-scheme "prefer-light"
+gsettings set org.gnome.desktop.interface color-scheme "prefer-light"
 else
-  gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
+gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
 fi
-
-# --- GTK2/GTK3 apps: live через XSETTINGS (xsettingsd) ---
-CONF="$HOME/.config/xsettingsd/xsettingsd.conf"
-mkdir -p "$(dirname "$CONF")"
-
-cat > "$CONF" <<EOF
-Net/ThemeName "$GTK3_THEME"
-Net/IconThemeName "$GTK3_ICONS"
-Gtk/CursorThemeName "WhiteSur-cursors"
-Gtk/CursorThemeSize 36
-Gtk/FontName "Noto Sans Semi-Bold 12"
-Gtk/ApplicationPreferDarkTheme $PREFER_DARK_THEME
-Xft/Antialias 1
-Xft/Hinting 1
-Xft/HintStyle "hintslight"
-Xft/RGBA "rgb"
-EOF
-
-# Перечитать конфиг и мгновенно перепубликовать XSETTINGS.
-if pgrep -x xsettingsd >/dev/null; then
-  pkill -HUP xsettingsd
-else
-  xsettingsd -c "$CONF" >/dev/null 2>&1 &
-fi
-
-echo "XSETTINGS theme updated: $GTK3_THEME / $GTK3_ICONS (dark=$PREFER_DARK_THEME)"
 
 mkdir -p ~/.config/gtk-3.0/
 mkdir -p ~/.config/gtk-4.0/ # Ensure gtk-4.0 directory also exists
@@ -78,3 +52,4 @@ sed -i "s/^gtk-icon-theme-name=\".*\"/gtk-icon-theme-name=\"$GTK3_ICONS\"/" ~/.g
 sed -i "s/^gtk-theme-name=\".*\"/gtk-theme-name=\"$GTK3_THEME\"/" ~/.gtkrc-2.0
 
 echo "GTK settings updated."
+

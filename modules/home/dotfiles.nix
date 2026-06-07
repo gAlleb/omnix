@@ -15,6 +15,8 @@ let
     # ~/.config/fontconfig/conf.d/10-hm-fonts.conf (из gtk.font.name).
     # Наш собственный fonts.conf подключаем отдельным файлом ниже.
     "ghostty"
+    "gtk-3.0"
+    "gtk-4.0"
     "kitty"
     # "mako"   — notification daemon not currently installed
     "mango"
