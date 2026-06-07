@@ -20,6 +20,10 @@ if [[ ! -d "$THEME_PATH" ]]; then
   exit 2
 fi
 
+if [ ! -d ~/.config/dunst ] ; then
+    mkdir -p ~/.config/dunst
+fi
+
 # Update theme symlinks
 ln -nsf "$THEME_PATH" "$CURRENT_THEME_DIR"
 
@@ -32,6 +36,7 @@ wal -c
 wal --theme "$CURRENT_THEME_DIR/colors.json"
 pkill -SIGUSR2 waybar
 swaync-client -rs
+ln -sf ~/.cache/wal/dunstrc ~/.config/dunst/dunstrc
 dunstctl reload
 makoctl reload 
 pkill -e --signal SIGKILL dunst

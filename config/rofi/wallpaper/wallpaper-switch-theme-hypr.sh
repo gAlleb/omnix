@@ -61,6 +61,7 @@ omnix-theme-set-browser wal
 pkill -SIGUSR2 waybar
 swaync-client -rs
 makoctl reload
+ln -sf ~/.cache/wal/dunstrc ~/.config/dunst/dunstrc 
 dunstctl reload
 pkill -e --signal SIGKILL dunst
 #$HOME/.config/nwg-dock-hyprland/reload.sh &
