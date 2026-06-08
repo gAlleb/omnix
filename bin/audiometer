@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# spec — Copyright (c) 2024 Matthias C. Hormann (2024-03-26)
+# Show a spectrogram for an audio file using ffmpeg's showspectrumpic.
+# Add this to the "Open with…" context menu of your file manager!
+
+set -euo pipefail
+
+me=$(basename "$0")
+version="0.2"
+
+if [ -z "${1:-}" ]; then
+  echo "Usage: $me <audio-file>"
+  exit 1
+fi
+
+TEMP=$(mktemp -u -t "${me}" 2>/dev/null || mktemp -u -t "${me}-XXXXXXXXXX")
+TEMPIMG="${TEMP}.png"
+TEMPTXT="${TEMP}.txt"
+
+basename "$1" > "${TEMPTXT}"
+
+ffmpeg -v quiet -y -i "$1" \
+  -filter_complex "showspectrumpic=s=1024x512:stop=22000,drawtext=expansion=none:textfile='${TEMPTXT}':x=(w-tw)/2:y=16:fontcolor='white':fontsize=20" \
+  "$TEMPIMG"
+
+xdg-open "$TEMPIMG" >/dev/null 2>&1 &
+sleep 1
+rm -f "$TEMPIMG" "$TEMPTXT"
