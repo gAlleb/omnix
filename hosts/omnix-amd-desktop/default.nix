@@ -17,10 +17,13 @@ in
 
   networking.hostName = hostName;
 
-  omnix.profile.extras     = vars.extras;
   omnix.profile.bios       = vars.bootMode == "bios";
   omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
   omnix.profile.bootLoader = vars.bootLoader or "grub";
+
+  # Optional app groups — forwarded into options.omnix.apps.* (see
+  # modules/system/apps.nix). Missing/partial `apps` block → off.
+  omnix.apps = vars.apps or {};
 
   swapDevices = [
     { device = "/swapfile"; size = vars.swapSize; }   # MiB

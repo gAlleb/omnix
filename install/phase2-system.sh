@@ -3,7 +3,7 @@
 # omnix install — phase 2 (runs after first boot, as your user).
 #
 # Reads /etc/omnix-install.env (written by phase 1) for defaults and asks
-# you to confirm host / timezone / LAN subnet / extras / git persona.
+# you to confirm host / timezone / LAN subnet / git persona.
 # Then:
 #
 #   - If ~/.local/share/omnix doesn't exist: clones the flake there and
@@ -33,7 +33,6 @@ DEFAULT_IGPU_BUS_ID="PCI:0:2:0"
 DEFAULT_NVIDIA_BUS_ID="PCI:1:0:0"
 DEFAULT_TIMEZONE="Europe/Moscow"
 DEFAULT_LAN_SUBNET=192.168.1.0/24
-DEFAULT_EXTRAS=false
 DEFAULT_FULL_NAME=""
 DEFAULT_EMAIL=""
 EXPECTED_USER=$USER
@@ -49,7 +48,6 @@ if [ -r "$ENV_FILE" ]; then
   DEFAULT_NVIDIA_BUS_ID=${OMNIX_NVIDIA_BUS_ID:-$DEFAULT_NVIDIA_BUS_ID}
   DEFAULT_TIMEZONE=${OMNIX_TIMEZONE:-$DEFAULT_TIMEZONE}
   DEFAULT_LAN_SUBNET=${OMNIX_LAN_SUBNET:-$DEFAULT_LAN_SUBNET}
-  DEFAULT_EXTRAS=${OMNIX_EXTRAS:-$DEFAULT_EXTRAS}
   DEFAULT_FULL_NAME=${OMNIX_FULL_NAME:-$DEFAULT_FULL_NAME}
   DEFAULT_EMAIL=${OMNIX_EMAIL:-$DEFAULT_EMAIL}
   EXPECTED_USER=${OMNIX_USERNAME:-$USER}
@@ -167,13 +165,9 @@ fi
 TIMEZONE=$(ask "Timezone" "$DEFAULT_TIMEZONE")
 LAN_SUBNET=$(ask "LAN subnet allowed through firewall" "$DEFAULT_LAN_SUBNET")
 
-if [ "$DEFAULT_EXTRAS" = "true" ]; then
-  read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (Y/n): " EXTRAS_ANS </dev/tty
-  if [[ "$EXTRAS_ANS" =~ ^[Nn]$ ]]; then EXTRAS=false; else EXTRAS=true; fi
-else
-  read -rp "Install heavy extras (brave, chromium, vlc, obs, …)? (y/N): " EXTRAS_ANS </dev/tty
-  if [[ "$EXTRAS_ANS" =~ ^[Yy]$ ]]; then EXTRAS=true; else EXTRAS=false; fi
-fi
+# Optional app groups (gaming/comms/media/…) are no longer asked here.
+# After install, flip them in hosts/<host>/variables.nix and rebuild —
+# the file ships with a commented menu of every group. See INSTALL.md.
 
 FULL_NAME=$(ask "Full name for git commits" "$DEFAULT_FULL_NAME")
 EMAIL=$(ask "Email for git commits" "$DEFAULT_EMAIL")
@@ -193,7 +187,6 @@ OMNIX_NVIDIA_BUS_ID=$NVIDIA_BUS_ID
 OMNIX_USERNAME=$USERNAME
 OMNIX_TIMEZONE=$TIMEZONE
 OMNIX_LAN_SUBNET=$LAN_SUBNET
-OMNIX_EXTRAS=$EXTRAS
 OMNIX_FULL_NAME=$FULL_NAME
 OMNIX_EMAIL=$EMAIL
 EOF
@@ -230,10 +223,13 @@ in
 
   networking.hostName = hostName;
 
-  omnix.profile.extras     = vars.extras;
   omnix.profile.bios       = vars.bootMode == "bios";
   omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
   omnix.profile.bootLoader = vars.bootLoader or "grub"; 
+
+  # Optional app groups — forwarded into options.omnix.apps.* (see
+  # modules/system/apps.nix). Missing/partial `apps` block → off.
+  omnix.apps = vars.apps or {};
 
   swapDevices = [
     { device = "/swapfile"; size = vars.swapSize; }   # MiB
@@ -262,7 +258,20 @@ PRIMEEOF
   username  = "$USERNAME";
   timeZone  = "$TIMEZONE";
   lanSubnet = "$LAN_SUBNET";
-  extras    = $EXTRAS;
+
+  # ── Опциональные наборы приложений ───────────────────────────
+  # Поставь true и пересобери. Чего нет в списке — выключено
+  # (полные списки пакетов — в modules/system/apps.nix).
+  apps = {
+    gaming    = false;  # Steam + gamescope + mangohud
+    comms     = false;  # vesktop, telegram-desktop, gajim, senpai
+    browsers  = false;  # brave (zen ставится всегда)
+    media     = false;  # vlc, obs-studio, audacity, flacon, puddletag
+    office    = false;  # obsidian, foliate, papers, nextcloud-client, gearlever
+    net       = false;  # transmission, filezilla, remmina
+    ocr       = false;  # gimagereader + tesseract
+    syncthing = false;  # служба Syncthing
+  };
 
   profile    = "$PROFILE";
 

@@ -39,9 +39,30 @@ autodetect both via `lspci`; you can verify with
 
 The host's `default.nix` reads everything machine-specific from its
 own `variables.nix`: `bootMode` (uefi/bios), `biosDevice`, `swapSize`,
-`extras` toggle, `profile`, plus user/timezone/LAN/git persona. To
-change any of these post-install you edit `variables.nix` and rebuild
-— no need to touch `default.nix`.
+`profile`, the optional app-group toggles (see below), plus
+user/timezone/LAN/git persona. To change any of these post-install you
+edit `variables.nix` and rebuild — no need to touch `default.nix`.
+
+**Optional app groups**: every `variables.nix` ships with a commented
+menu of application groups, all `false` by default:
+
+| Toggle | Installs |
+|---|---|
+| `gaming` | Steam (+ 32-bit libs / FHS) + gamescope + mangohud |
+| `comms` | vesktop, telegram-desktop, gajim, senpai |
+| `browsers` | brave (zen is always installed) |
+| `media` | vlc, obs-studio, audacity, flacon, puddletag |
+| `office` | obsidian, foliate, papers, nextcloud-client, gearlever |
+| `net` | transmission, filezilla, remmina |
+| `ocr` | gimagereader + tesseract |
+| `syncthing` | the Syncthing service |
+
+Flip the ones you want to `true` and rebuild
+(`sudo nixos-rebuild switch --flake .#<host>`). A group you don't list
+is simply off — no eval error. The groups live in
+`modules/system/apps.nix`; plain packages go to
+`environment.systemPackages`, while `gaming` (Steam) and `syncthing`
+also wire up the system-level bits a bare package can't.
 
 **Adding a host without the installer**: create a directory under
 `hosts/<new-name>/` with `default.nix`, `hardware-configuration.nix`,
@@ -59,7 +80,7 @@ take care of the boring parts:
 
 | Step | What | When | Run as |
 |---|---|---|---|
-| `install/phase1-iso.sh` | Asks host / boot / disk / swap / username / timezone / LAN subnet / extras / git persona / initial password. Generates `/mnt/etc/nixos/configuration.nix` and saves the answers to `/mnt/etc/omnix-install.env`. | On the install ISO, after partitioning + mount. | `root` (`sudo`) |
+| `install/phase1-iso.sh` | Asks host / boot / disk / swap / username / timezone / LAN subnet / git persona / initial password. Generates `/mnt/etc/nixos/configuration.nix` and saves the answers to `/mnt/etc/omnix-install.env`. | On the install ISO, after partitioning + mount. | `root` (`sudo`) |
 | `install/phase2-system.sh` | Reads `/etc/omnix-install.env`, clones this flake into `~/.local/share/omnix`, copies `hardware-configuration.nix` into the repo, writes `hosts/<host>/variables.nix` (and `default.nix` if the host is custom) with the answers, runs `nixos-rebuild boot --flake`. | After first boot, logged in as your user. | your user |
 
 Neither script touches the disk. Partitioning, `nixos-install`, and the
@@ -147,7 +168,6 @@ It asks:
 | Username | `stefan` | Your account name |
 | Timezone | `Europe/Moscow` | Any `tzdata` zone |
 | LAN subnet | `192.168.1.0/24` | Subnet allowed through the firewall |
-| Heavy extras | `N` | Brave, Chromium, VLC, OBS, Telegram, Audacity, etc. Skip on a tiny VM. |
 | Full name / email | — | For git commits. Saved into `variables.nix`, change anytime. |
 | Initial password | — | Hashed with `mkpasswd -m sha-512` |
 
@@ -183,8 +203,9 @@ curl -L https://raw.githubusercontent.com/galleb/omnix/refs/heads/main/install/p
 Phase 2:
 1. Reads `/etc/omnix-install.env` (written by phase 1) for defaults and
    asks you to confirm host / profile / boot mode / swap size /
-   timezone / LAN subnet / extras / git persona — press Enter to keep
-   what you picked during phase 1, or type a new value.
+   timezone / LAN subnet / git persona — press Enter to keep
+   what you picked during phase 1, or type a new value. Optional app
+   groups aren't asked here; flip them in `variables.nix` after install.
 2. Persists your answers back to `/etc/omnix-install.env`.
 3. If `~/.local/share/omnix` doesn't exist yet:
    - Clones the flake there.

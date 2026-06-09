@@ -23,7 +23,7 @@
 
       # ┌──────────────────────────────────────────────────────────────────┐
       # │ Per-host user settings live in hosts/<hostName>/variables.nix    │
-      # │ — username, timezone, LAN subnet, extras flag, git persona, and  │
+      # │ — username, timezone, LAN subnet, app groups, git persona, and   │
       # │ the `profile` field that selects which profiles/<x>/default.nix  │
       # │ to apply. install/phase2-system.sh writes that file on install;  │
       # │ for a manual fork, edit it directly.                             │

@@ -91,32 +91,10 @@
     wal-telegram
   ] ++ [
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
-  ] ++ lib.optionals osConfig.omnix.profile.extras (with pkgs; [
-    # Тяжёлые опциональные приложения. Включаются опцией
-    # `omnix.profile.extras = true;` (см. modules/system/options.nix).
-    # На omnix-vm по дефолту выключены, на реальном omnix — включены.
-    brave
-    zen
-    vesktop
-    telegram-desktop
-    gajim
-    senpai
-    vlc
-    obsidian
-    nextcloud-client
-    audacity
-    obs-studio
-    foliate
-    papers
-    transmission_4-gtk
-    filezilla
-    remmina
-    flacon
-    puddletag
-    gearlever
-    gimagereader
-    tesseract
-  ]);
+  ];
+  # Опциональные наборы приложений (comms / media / office / gaming / …)
+  # переехали в modules/system/apps.nix и включаются по категориям из
+  # hosts/<host>/variables.nix.
 
   services.cliphist.enable = true;
 }

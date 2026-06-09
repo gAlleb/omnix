@@ -108,7 +108,7 @@ INSTALL.md            # step-by-step install
 ```
 
 Per-host configuration (username, timezone, LAN subnet, bootMode,
-bootLoader, swapSize, git persona, extras toggle, drivers profile)
+bootLoader, swapSize, git persona, optional app groups, drivers profile)
 lives in `hosts/<x>/variables.nix`. Each `default.nix` reads from
 there; no hardcoded values. UEFI hosts pick `grub` or `systemd-boot`
 through `bootLoader`; BIOS hosts always use GRUB.

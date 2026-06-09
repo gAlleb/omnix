@@ -5,6 +5,7 @@
     ./boot.nix
     ./networking.nix
     ./mihomo.nix
+    ./apps.nix
     ./locale.nix
     ./users.nix
     ./audio.nix

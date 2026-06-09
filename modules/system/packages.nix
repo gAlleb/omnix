@@ -78,8 +78,8 @@
     gnumake
     gcc
 
-    # tesseract (OCR) переехал в modules/home/packages.nix под
-    # omnix.profile.extras — он нужен только связке gimagereader.
+    # tesseract (OCR) живёт в modules/system/apps.nix под группой `ocr`
+    # — он нужен только в связке с gimagereader.
   ];
 
   programs.nix-ld = {

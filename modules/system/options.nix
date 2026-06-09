@@ -32,17 +32,20 @@
         Ignored on BIOS hosts — GRUB is always used there.
       '';
     };
+  };
 
-    extras = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Включает тяжёлые опциональные приложения — браузеры (brave,
-        chromium), мессенджеры (telegram-desktop, vesktop, gajim),
-        медиа (vlc, mpv, strawberry, audacity, obs-studio), OCR
-        (tesseract + gimagereader) и прочий софт, который не всегда
-        нужен (особенно на голой тест-ВМ).
-      '';
-    };
+  # Опциональные наборы приложений. Значения приходят из
+  # hosts/<host>/variables.nix (блок `apps = { … }`) — маппинг живёт в
+  # modules/system/apps.nix. Объявлены опциями (а не читаются напрямую),
+  # чтобы любой другой модуль мог спросить config.omnix.apps.<группа>.
+  options.omnix.apps = {
+    gaming    = lib.mkEnableOption "Steam + gamescope + mangohud";
+    comms     = lib.mkEnableOption "vesktop, telegram-desktop, gajim, senpai";
+    browsers  = lib.mkEnableOption "brave (zen ставится всегда)";
+    media     = lib.mkEnableOption "vlc, obs-studio, audacity, flacon, puddletag";
+    office    = lib.mkEnableOption "obsidian, foliate, papers, nextcloud-client, gearlever";
+    net       = lib.mkEnableOption "transmission, filezilla, remmina";
+    ocr       = lib.mkEnableOption "gimagereader + tesseract";
+    syncthing = lib.mkEnableOption "Syncthing";
   };
 }
