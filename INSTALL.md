@@ -85,7 +85,12 @@ Bring up network:
 sudo systemctl start wpa_supplicant
 nmcli device wifi connect <SSID> password <PW>
 ```
+or if nmcli is absent:
 
+```sh 
+wpa_passphrase "wifi_name" "pass" | sudo tee /etc/wpa_supplicant.conf
+sudo systemctl restart wpa_supplicant
+```
 ---
 
 ## 2. Partition + format + mount
