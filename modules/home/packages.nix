@@ -57,6 +57,7 @@
     yazi
     btop
     dust
+    amnezia-vpn
 
     # ── Theming / tools ──────────────────────────────────────────
     pywal16

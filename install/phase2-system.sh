@@ -295,8 +295,28 @@ sudo chown "$USER:users" "$REPO/hosts/$HOST/hardware-configuration.nix"
 echo "==> Staging hosts/$HOST/ for the flake evaluation"
 git -C "$REPO" add "hosts/$HOST/" 2>/dev/null || true
 
-echo "==> Running nixos-rebuild boot --flake .#$HOST"
 cd "$REPO"
+
+# Confirm before the rebuild — mirrors phase1's "Run nixos-install
+# now?" gate. Answer 'n' to stop here, hand-edit the config (e.g. add
+# boot.loader.efi.efiSysMountPoint = "/boot/efi"; to
+# hosts/$HOST/default.nix for a small-ESP / Path B install — see
+# INSTALL.md), then run the rebuild yourself.
+echo
+read -rp "Run 'nixos-rebuild boot --flake .#$HOST' now? (Y/n): " RUN_REBUILD </dev/tty
+if [[ "$RUN_REBUILD" =~ ^[Nn]$ ]]; then
+  cat <<EOF
+
+Skipped. Edit hosts/$HOST/default.nix if needed, then finish manually:
+
+  cd $REPO
+  sudo nixos-rebuild boot --flake ".#$HOST"
+  sudo reboot
+EOF
+  exit 0
+fi
+
+echo "==> Running nixos-rebuild boot --flake .#$HOST"
 sudo nixos-rebuild boot --flake ".#$HOST"
 
 echo

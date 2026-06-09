@@ -342,8 +342,10 @@ generates a GRUB-EFI block. But phase1's generated
    boot.loader.efi.canTouchEfiVariables = true;
    boot.loader.efi.efiSysMountPoint = "/boot/efi";   # ← add this
    ```
-2. **After phase 2** open `~/.local/share/omnix/hosts/<host>/default.nix`
-   and add the same line in the config block.
+2. **During phase 2**, answer `n` at the `Run 'nixos-rebuild boot…'
+   now?` prompt, open `~/.local/share/omnix/hosts/<host>/default.nix`,
+   add the same line in the config block, then run the rebuild
+   manually as the prompt instructs.
 
 NixOS kernels then live in `/boot/` on the ext4 root (like Void),
 GRUB EFI binary lands in the small ESP next to Windows/Void. Caveat:
