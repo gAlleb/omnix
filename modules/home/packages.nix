@@ -101,7 +101,8 @@
     gajim
     senpai
     vlc
-    strawberry
+    obsidian
+    nextcloud-client
     audacity
     obs-studio
     foliate

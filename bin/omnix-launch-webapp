@@ -2,13 +2,26 @@
 
 browser=$(xdg-settings get default-web-browser)
 
+#case $browser in
+#google-chrome* | brave* | microsoft-edge* | opera* | vivaldi*) ;;
+#*) 
+#        if [[ -f ~/.local/share/applications/brave-browser.desktop ]] || \
+#           [[ -f ~/.nix-profile/share/applications/brave-browser.desktop ]] || \
+#           [[ -f /usr/share/applications/brave-browser.desktop ]]; then
+#            browser="brave-browser.desktop"
+#        else
+#            browser="chromium.desktop"
+#        fi
+#        ;;
+#esac
+
 case $browser in
-google-chrome* | brave-browser* | microsoft-edge* | opera* | vivaldi*) ;;
-*) 
-        if [[ -f ~/.local/share/applications/brave-browser.desktop ]] || \
-           [[ -f ~/.nix-profile/share/applications/brave-browser.desktop ]] || \
-           [[ -f /usr/share/applications/brave-browser.desktop ]]; then
-            browser="brave-browser.desktop"
+    google-chrome* | brave* | microsoft-edge* | opera* | vivaldi*) ;;
+    *) 
+        found_brave=$(ls {~/.local,~/.nix-profile,/usr}/share/applications/brave*.desktop 2>/dev/null | head -1)
+        
+        if [[ -n "$found_brave" ]]; then
+            browser=$(basename "$found_brave")
         else
             browser="chromium.desktop"
         fi
