@@ -1,0 +1,74 @@
+#!/bin/bash
+# Allow your user to manage the mihomo service without a password
+# yourusername ALL=(ALL) NOPASSWD: /usr/bin/sv * mihomo
+# Allow your user to link the config files
+# yourusername ALL=(ALL) NOPASSWD: /usr/bin/ln -sf /path/to/mihomo/config/*
+# --- CONFIGURATION ---
+CONF_DIR="/etc/mihomo"
+SERVICE_NAME="mihomo"
+AUTH="sudo" # or "doas"
+
+# --- SERVICE COMMAND PRESETS (Comment/Uncomment as needed) ---
+
+# RUNIT (Void Linux)
+# CMD_START="$AUTH sv start $SERVICE_NAME"
+# CMD_STOP="$AUTH sv stop $SERVICE_NAME"
+# CMD_RESTART="$AUTH sv restart $SERVICE_NAME"
+# CMD_STATUS_CHECK="$AUTH sv status $SERVICE_NAME | grep -q '^run'"
+
+# SYSTEMD (NixOS / Ubuntu / etc)
+CMD_START="$AUTH systemctl start $SERVICE_NAME"
+CMD_STOP="$AUTH systemctl stop $SERVICE_NAME"
+CMD_RESTART="$AUTH systemctl restart $SERVICE_NAME"
+CMD_STATUS_CHECK="$AUTH systemctl is-active --quiet $SERVICE_NAME"
+
+# --- LOGIC ---
+
+# Check if service is running
+if eval "$CMD_STATUS_CHECK"; then
+    STATUS="ON"
+    ICON=""
+else
+    STATUS="OFF"
+    ICON=""
+fi
+
+# Get current active config (resolving the symlink)
+# We use 'readlink -f' to find the actual file the symlink points to
+CURRENT_CONF=$(basename "$(readlink -f "$CONF_DIR/config.yaml")")
+
+# Main Menu
+OPTIONS="Toggle Service ($STATUS)\nSwitch Config ($CURRENT_CONF)\nRestart Service\nQuit"
+
+CHOICE=$(echo -e "$OPTIONS" | rofi -dmenu -i -theme ~/.config/rofi/menu-style-minimal.rasi -p "Mihomo")
+
+case "$CHOICE" in
+    *"Toggle Service"*)
+        if [ "$STATUS" = "ON" ]; then
+            eval "$CMD_STOP" && notify-send "Mihomo" "Service Stopped"
+        else
+            eval "$CMD_START" && notify-send "Mihomo" "Service Started"
+        fi
+        ;;
+
+    *"Switch Config"*)
+        # List all yaml files except the symlink itself
+        FILES=$(find "$CONF_DIR" -maxdepth 1 -name "*.yaml" ! -name "config.yaml" -printf "%f\n")
+        NEW_CONF=$(echo -e "$FILES" | rofi -dmenu -i -p "Select Config")
+
+        if [ -n "$NEW_CONF" ]; then
+            # Update symlink (using $AUTH in case directory is root-owned)
+            $AUTH ln -sf "$CONF_DIR/$NEW_CONF" "$CONF_DIR/config.yaml"
+            # Restart service to apply changes
+            eval "$CMD_RESTART"
+            notify-send "Mihomo" "Switched to $NEW_CONF"
+        fi
+        ;;
+
+    *"Restart Service"*)
+        eval "$CMD_RESTART" && notify-send "Mihomo" "Service Restarted"
+        ;;
+    *)
+        exit 0
+        ;;
+esac
