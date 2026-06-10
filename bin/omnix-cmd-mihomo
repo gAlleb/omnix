@@ -54,7 +54,7 @@ case "$CHOICE" in
     *"Switch Config"*)
         # List all yaml files except the symlink itself
         FILES=$(find "$CONF_DIR" -maxdepth 1 -name "*.yaml" ! -name "config.yaml" -printf "%f\n")
-        NEW_CONF=$(echo -e "$FILES" | rofi -dmenu -i -p "Select Config")
+        NEW_CONF=$(echo -e "$FILES" | rofi -dmenu -i -theme ~/.config/rofi/menu-style-minimal.rasi -p "Select Config")
 
         if [ -n "$NEW_CONF" ]; then
             # Update symlink (using $AUTH in case directory is root-owned)
