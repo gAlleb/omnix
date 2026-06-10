@@ -2,7 +2,8 @@
 #
 # omnix install — phase 1 (runs on the NixOS minimal ISO, as root).
 #
-# Prereq: target disk partitioned + /mnt mounted (and /mnt/boot for UEFI).
+# Prereq: target disk partitioned + /mnt mounted (and /mnt/boot for UEFI;
+# for a small inherited ESP mount it at /mnt/boot/efi instead — see Path B).
 # This script asks a few questions, runs `nixos-generate-config --root /mnt`,
 # writes a minimal `/mnt/etc/nixos/configuration.nix` that boots into a
 # bare system with git + SSH + your user, and drops
@@ -188,10 +189,25 @@ if [ "$BOOT" = "bios" ]; then
   DISK=$(ask "Disk device for GRUB" "/dev/sda")
 fi
 
+# ESP mount point. Standard UEFI mounts the ESP at /mnt/boot (kernels
+# live in the ESP). A small inherited ESP (e.g. a ~100 MiB Windows ESP)
+# can't hold NixOS kernels, so it's mounted at /mnt/boot/efi instead and
+# the kernels stay on the ext4 root's /boot. We detect which layout the
+# user mounted rather than asking — the mount itself is the source of truth.
+EFI_MOUNT=/boot
+if [ "$BOOT" = "uefi" ] && mountpoint -q /mnt/boot/efi; then
+  EFI_MOUNT=/boot/efi
+  echo "==> Detected ESP at /mnt/boot/efi → small-ESP layout (GRUB, kernels on root)."
+fi
+
 # UEFI hosts can use either GRUB (universal, os-prober for Windows) or
 # systemd-boot (smaller, auto-detects any UEFI OS in the same ESP).
-# BIOS is GRUB-only — systemd-boot doesn't run on BIOS.
-if [ "$BOOT" = "uefi" ]; then
+# BIOS is GRUB-only — systemd-boot doesn't run on BIOS. A small ESP at
+# /boot/efi is also GRUB-only — systemd-boot needs the kernels in the ESP.
+if [ "$BOOT" = "uefi" ] && [ "$EFI_MOUNT" = "/boot/efi" ]; then
+  BOOT_LOADER=grub
+  echo "==> small ESP → forcing GRUB (systemd-boot can't keep kernels off the ESP)."
+elif [ "$BOOT" = "uefi" ]; then
   BOOT_LOADER=$(ask "UEFI loader (grub | systemd-boot)" "grub")
   case "$BOOT_LOADER" in
     grub|systemd-boot) ;;
@@ -237,18 +253,25 @@ unset PW1 PW2
 #   BIOS                       → GRUB on a raw device (omnix-vm legacy install)
 #   UEFI + grub                → GRUB EFI (universal, os-prober for Windows)
 #   UEFI + systemd-boot        → systemd-boot (auto-detects ESP entries)
+# Small-ESP (EFI_MOUNT=/boot/efi) appends efiSysMountPoint to the UEFI+grub
+# block so GRUB installs into the small ESP while kernels stay on root.
+EFI_MOUNT_LINE=""
+if [ "$EFI_MOUNT" != "/boot" ]; then
+  EFI_MOUNT_LINE="
+  boot.loader.efi.efiSysMountPoint = \"$EFI_MOUNT\";"
+fi
 if [ "$BOOT" = "uefi" ] && [ "$BOOT_LOADER" = "systemd-boot" ]; then
   BOOT_BLOCK='  boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;'
 elif [ "$BOOT" = "uefi" ]; then
-  BOOT_BLOCK='  boot.loader.systemd-boot.enable = false;
+  BOOT_BLOCK="  boot.loader.systemd-boot.enable = false;
   boot.loader.grub = {
     enable = true;
-    device = "nodev";
+    device = \"nodev\";
     efiSupport = true;
     useOSProber = true;
   };
-  boot.loader.efi.canTouchEfiVariables = true;'
+  boot.loader.efi.canTouchEfiVariables = true;$EFI_MOUNT_LINE"
 else
   BOOT_BLOCK="  boot.loader.systemd-boot.enable = false;
   boot.loader.grub = {
@@ -313,6 +336,7 @@ OMNIX_PROFILE=$PROFILE
 OMNIX_BOOT_MODE=$BOOT
 OMNIX_BIOS_DEVICE=$DISK
 OMNIX_BOOT_LOADER=$BOOT_LOADER
+OMNIX_EFI_MOUNT=$EFI_MOUNT
 OMNIX_SWAP_SIZE=$SWAP_SIZE
 OMNIX_IGPU_BUS_ID=$IGPU_BUS_ID
 OMNIX_NVIDIA_BUS_ID=$NVIDIA_BUS_ID

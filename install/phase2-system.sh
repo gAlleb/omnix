@@ -157,6 +157,25 @@ if [ "$BOOT_MODE" = "bios" ] && [ "$BOOT_LOADER" != "grub" ]; then
   BOOT_LOADER=grub
 fi
 
+# ESP mount point — carried from phase1's env, or detected from the
+# running system when there's no env file (user cloned omnix onto an
+# already-installed self-made OS). Same philosophy as bootMode above:
+# the ESP is physically mounted where it's mounted, so we detect rather
+# than ask — letting the user "choose" would just write a wrong value
+# and break the next rebuild.
+if [ -n "${OMNIX_EFI_MOUNT:-}" ]; then
+  EFI_MOUNT=$OMNIX_EFI_MOUNT
+elif mountpoint -q /boot/efi; then
+  EFI_MOUNT=/boot/efi
+  echo "==> Detected ESP at /boot/efi (small-ESP / Void-style layout, no env file)"
+else
+  EFI_MOUNT=/boot
+fi
+if [ "$EFI_MOUNT" = "/boot/efi" ] && [ "$BOOT_LOADER" != "grub" ]; then
+  echo "==> ESP at /boot/efi → forcing bootLoader=grub (systemd-boot needs kernels in the ESP)"
+  BOOT_LOADER=grub
+fi
+
 SWAP_SIZE=$(ask "Swap size in MiB" "$DEFAULT_SWAP_SIZE")
 if [[ ! "$SWAP_SIZE" =~ ^[0-9]+$ ]]; then
   echo "Invalid swap size: $SWAP_SIZE" >&2; exit 1
@@ -181,6 +200,7 @@ OMNIX_PROFILE=$PROFILE
 OMNIX_BOOT_MODE=$BOOT_MODE
 OMNIX_BIOS_DEVICE=$BIOS_DEVICE
 OMNIX_BOOT_LOADER=$BOOT_LOADER
+OMNIX_EFI_MOUNT=$EFI_MOUNT
 OMNIX_SWAP_SIZE=$SWAP_SIZE
 OMNIX_IGPU_BUS_ID=$IGPU_BUS_ID
 OMNIX_NVIDIA_BUS_ID=$NVIDIA_BUS_ID
@@ -225,7 +245,8 @@ in
 
   omnix.profile.bios       = vars.bootMode == "bios";
   omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
-  omnix.profile.bootLoader = vars.bootLoader or "grub"; 
+  omnix.profile.bootLoader = vars.bootLoader or "grub";
+  omnix.profile.efiSysMountPoint = vars.efiSysMountPoint or "/boot";
 
   # Optional app groups — forwarded into options.omnix.apps.* (see
   # modules/system/apps.nix). Missing/partial `apps` block → off.
@@ -253,6 +274,15 @@ PRIMEEOF
       ;;
   esac
 
+  # efiSysMountPoint: the real value for a small ESP, otherwise a
+  # commented hint so the knob stays discoverable. $EFI_MOUNT was either
+  # carried from phase1's env or detected from the running system above.
+  if [ "$EFI_MOUNT" != "/boot" ]; then
+    EFI_LINE="  efiSysMountPoint = \"$EFI_MOUNT\";"
+  else
+    EFI_LINE='  # efiSysMountPoint = "/boot/efi";  # uncomment for a small inherited ESP (Path B); default "/boot"'
+  fi
+
   cat > "$REPO/hosts/$HOST/variables.nix" <<EOF
 {
   username  = "$USERNAME";
@@ -278,6 +308,7 @@ PRIMEEOF
   bootMode   = "$BOOT_MODE";
   biosDevice = "$BIOS_DEVICE";
   bootLoader = "$BOOT_LOADER";
+$EFI_LINE
   swapSize   = $SWAP_SIZE;$PRIME_BLOCK
 
   fullName  = "$FULL_NAME";
@@ -307,10 +338,9 @@ git -C "$REPO" add "hosts/$HOST/" 2>/dev/null || true
 cd "$REPO"
 
 # Confirm before the rebuild — mirrors phase1's "Run nixos-install
-# now?" gate. Answer 'n' to stop here, hand-edit the config (e.g. add
-# boot.loader.efi.efiSysMountPoint = "/boot/efi"; to
-# hosts/$HOST/default.nix for a small-ESP / Path B install — see
-# INSTALL.md), then run the rebuild yourself.
+# now?" gate. Answer 'n' to stop here, inspect/edit the config, then run
+# the rebuild yourself. (Small-ESP / Path B is automatic now:
+# efiSysMountPoint is detected and written into variables.nix above.)
 echo
 read -rp "Run 'nixos-rebuild boot --flake .#$HOST' now? (Y/n): " RUN_REBUILD </dev/tty
 if [[ "$RUN_REBUILD" =~ ^[Nn]$ ]]; then

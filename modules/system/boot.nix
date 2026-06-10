@@ -27,6 +27,11 @@ in
 
   boot.loader.efi.canTouchEfiVariables = lib.mkIf (!cfg.bios) true;
 
+  # ESP mount point. Default "/boot" (NixOS default; kernels in the ESP).
+  # A small inherited ESP (variables.nix → efiSysMountPoint = "/boot/efi")
+  # keeps kernels on the ext4 root and only the GRUB EFI binary in the ESP.
+  boot.loader.efi.efiSysMountPoint = lib.mkIf (!cfg.bios) cfg.efiSysMountPoint;
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.tmp.cleanOnBoot = true;
 }

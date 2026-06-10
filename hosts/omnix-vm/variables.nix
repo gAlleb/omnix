@@ -31,6 +31,7 @@
   # Swap file size in MiB. 4 GiB sane default for a VM.
   swapSize = 4096;
   bootLoader = "grub";
+  # efiSysMountPoint = "/boot/efi";  # uncomment for a small inherited ESP (Path B); default "/boot"
 
   # Git persona — phase2 спрашивает и тоже пишет сюда.
   fullName  = "user";

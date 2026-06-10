@@ -343,8 +343,10 @@ extra config. NixOS kernels live in `/boot` (= the ESP).
 
 ### Path B — small ESP (e.g. 38 MiB inherited from Windows), GRUB Void-style
 
-If the existing ESP is too small to hold NixOS kernels, mount it as
-`/boot/efi` and keep NixOS kernels on the ext4 root:
+If the existing ESP is too small to hold NixOS kernels, mount it at
+`/mnt/boot/efi` (**not** `/mnt/boot`) and keep NixOS kernels on the
+ext4 root. The installer detects this layout automatically — no manual
+config edits at either phase:
 
 ```sh
 sudo mkfs.ext4 -L nixos-root /dev/sdaN
@@ -353,24 +355,27 @@ sudo mkdir -p /mnt/boot/efi
 sudo mount /dev/sda1 /mnt/boot/efi   # ← small inherited ESP here
 ```
 
-In phase1 answer **`uefi`** and **`grub`** at the loader prompt — that
-generates a GRUB-EFI block. But phase1's generated
-`configuration.nix` assumes `/boot = ESP`, so you need **two edits**:
+Then run phase1 and answer **`uefi`** at the boot prompt. Because the
+ESP is mounted at `/mnt/boot/efi`, phase1:
 
-1. **Before `nixos-install`** open `/mnt/etc/nixos/configuration.nix`
-   and add one line:
-   ```nix
-   boot.loader.efi.canTouchEfiVariables = true;
-   boot.loader.efi.efiSysMountPoint = "/boot/efi";   # ← add this
-   ```
-2. **During phase 2**, answer `n` at the `Run 'nixos-rebuild boot…'
-   now?` prompt, open `~/.local/share/omnix/hosts/<host>/default.nix`,
-   add the same line in the config block, then run the rebuild
-   manually as the prompt instructs.
+- forces **GRUB** (systemd-boot can't keep kernels off the ESP, so the
+  loader prompt is skipped);
+- writes `boot.loader.efi.efiSysMountPoint = "/boot/efi";` into the
+  bootstrap `configuration.nix`; and
+- records it in `/mnt/etc/omnix-install.env`, so phase2 carries it into
+  `hosts/<host>/variables.nix` as `efiSysMountPoint = "/boot/efi";`.
 
-NixOS kernels then live in `/boot/` on the ext4 root (like Void),
+phase2 wires that through the typed `omnix.profile.efiSysMountPoint`
+option, so the flake rebuild installs GRUB into the small ESP too.
+
+NixOS kernels then live in `/boot/` on the ext4 root (like Void), the
 GRUB EFI binary lands in the small ESP next to Windows/Void. Caveat:
 GRUB's `useOSProber` only detects Windows reliably — for Void you'll
-either see it via UEFI firmware menu (F12 at boot), or add a manual
-GRUB entry. systemd-boot would have detected both, but it needs the
-big ESP.
+either see it via the UEFI firmware menu (F12 at boot), or add a manual
+GRUB entry. systemd-boot would have detected both, but it needs the big
+ESP.
+
+> Cloning omnix onto an already-running, self-installed system (no
+> phase1 env file)? phase2 detects the ESP mount the same way — if
+> `/boot/efi` is a separate mount, it sets `efiSysMountPoint`
+> accordingly before the rebuild.

@@ -23,6 +23,7 @@
 
   swapSize = 8192;
   bootLoader = "grub";
+  # efiSysMountPoint = "/boot/efi";  # uncomment for a small inherited ESP (Path B); default "/boot"
 
   # PRIME bus IDs — auto-detected by phase1 if available, otherwise
   # placeholders. Find with `lspci | grep -E 'VGA|3D'` and convert

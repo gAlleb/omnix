@@ -29,6 +29,7 @@
   # Swap file size in MiB. 8 GiB lets hibernation work on most setups.
   swapSize = 8192;
   bootLoader = "grub";
+  # efiSysMountPoint = "/boot/efi";  # uncomment for a small inherited ESP (Path B); default "/boot"
 
   fullName  = "user";
   email     = "user@localhost";

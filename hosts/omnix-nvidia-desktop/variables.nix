@@ -23,6 +23,7 @@
 
   swapSize = 8192;
   bootLoader = "grub";
+  # efiSysMountPoint = "/boot/efi";  # uncomment for a small inherited ESP (Path B); default "/boot"
 
   fullName  = "user";
   email     = "user@localhost";

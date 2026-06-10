@@ -32,6 +32,19 @@
         Ignored on BIOS hosts — GRUB is always used there.
       '';
     };
+
+    efiSysMountPoint = lib.mkOption {
+      type = lib.types.str;
+      default = "/boot";
+      description = ''
+        Where the EFI System Partition is mounted. Default "/boot"
+        (the ESP holds the NixOS kernels). Set to "/boot/efi" for a
+        small inherited ESP (e.g. a ~100 MiB Windows ESP): GRUB's EFI
+        binary is written there while the kernels live on the ext4
+        root's /boot. UEFI + GRUB only — systemd-boot needs the
+        kernels inside the ESP. Ignored on BIOS hosts.
+      '';
+    };
   };
 
   # Опциональные наборы приложений. Значения приходят из

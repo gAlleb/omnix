@@ -20,6 +20,7 @@ in
   omnix.profile.bios       = vars.bootMode == "bios";
   omnix.profile.biosDevice = vars.biosDevice or "/dev/sda";
   omnix.profile.bootLoader = vars.bootLoader or "grub";
+  omnix.profile.efiSysMountPoint = vars.efiSysMountPoint or "/boot";
 
   # Optional app groups — forwarded into options.omnix.apps.* (see
   # modules/system/apps.nix). Missing/partial `apps` block → off.
