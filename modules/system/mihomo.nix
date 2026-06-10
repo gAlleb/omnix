@@ -16,8 +16,14 @@
 
   systemd.services.mihomo.wantedBy = lib.mkForce [ ];
 
+  #systemd.tmpfiles.rules = [
+  #  "d /etc/mihomo 0755 root root -"
+  #  "C /etc/mihomo/config.yaml 0644 root root - ${./mihomo-config.yaml}"
+  #];
   systemd.tmpfiles.rules = [
     "d /etc/mihomo 0755 root root -"
-    "C /etc/mihomo/config.yaml 0644 root root - ${./mihomo-config.yaml}"
+    "C /etc/mihomo/home.yaml   0644 root root - ${../../config/mihomo/home.yaml}"
+    "C /etc/mihomo/office.yaml 0644 root root - ${../../config/mihomo/office.yaml}"    \
+    "L+ /etc/mihomo/config.yaml - - - - /etc/mihomo/home.yaml"
   ];
 }

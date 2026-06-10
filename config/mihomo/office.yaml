@@ -1,0 +1,19 @@
+# Placeholder mihomo (Clash.Meta) config.
+#
+# This is the MUTABLE /etc/mihomo/config.yaml (not the Nix store copy) —
+# edit it freely, then start the core:  sudo systemctl start mihomo
+# It is seeded here only once; rebuilds never overwrite your edits.
+#
+# Drop your real proxies / subscription into `proxies` + `proxy-groups`
+# and adjust `rules`. For a system-wide TUN proxy add a `tun:` block
+# (the systemd unit already has the caps via services.mihomo.tunMode).
+
+mixed-port: 7890
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+
+proxies: []
+proxy-groups: []
+rules:
+  - MATCH,DIRECT
