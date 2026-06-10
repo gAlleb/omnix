@@ -38,7 +38,7 @@ fi
 CURRENT_CONF=$(basename "$(readlink -f "$CONF_DIR/config.yaml")")
 
 # Main Menu
-OPTIONS="Toggle Service ($STATUS)\nSwitch Config ($CURRENT_CONF)\nRestart Service\nQuit"
+OPTIONS="Toggle Service ($STATUS)\nSwitch Config ($CURRENT_CONF)\nRestart Service\nEdit current config\nQuit"
 
 CHOICE=$(echo -e "$OPTIONS" | rofi -dmenu -i -theme ~/.config/rofi/menu-style-minimal.rasi -p "Mihomo")
 
@@ -63,6 +63,10 @@ case "$CHOICE" in
             eval "$CMD_RESTART"
             notify-send "Mihomo" "Switched to $NEW_CONF"
         fi
+        ;;
+
+    *"Edit current config"*)
+        omvoid-launch-editor "$CONF_DIR/config.yaml"
         ;;
 
     *"Restart Service"*)
