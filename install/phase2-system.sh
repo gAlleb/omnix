@@ -6,12 +6,13 @@
 # you to confirm host / timezone / LAN subnet / git persona.
 # Then:
 #
-#   - If ~/.local/share/omnix doesn't exist: clones the flake there and
-#     writes hosts/$HOST/variables.nix with the answers (this is the
-#     single file the repo reads all bootstrap values from).
-#   - If it does exist: skips clone + variables.nix write (the file
-#     has likely already been customised) and runs rebuild against the
-#     current repo state.
+#   - Clones the flake into ~/.local/share/omnix if it's not there yet.
+#   - Writes hosts/$HOST/variables.nix with your answers (the single
+#     file the repo reads all bootstrap values from) when the host is
+#     new, or when this run just cloned the repo. If the host dir was
+#     already present in a repo you'd cloned earlier, it leaves your
+#     variables.nix untouched. A brand-new custom host is created even
+#     on a pre-existing repo.
 #
 # Either way it copies the real /etc/nixos/hardware-configuration.nix
 # into the repo, persists your answers back to /etc/omnix-install.env,
@@ -214,20 +215,31 @@ sudo chmod 644 "$ENV_FILE"
 
 REPO="$HOME/.local/share/omnix"
 
+JUST_CLONED=false
 if [ ! -d "$REPO" ]; then
   echo "==> Cloning flake into $REPO"
   mkdir -p "$HOME/.local/share"
   git clone https://github.com/galleb/omnix.git "$REPO"
+  JUST_CLONED=true
+fi
 
-  # Custom host? Create its directory from scratch — pure heredoc, no
-  # cp+sed. The default.nix written here is the same shape as the
-  # default hosts in the repo (reads ./variables.nix, hostName from
-  # specialArgs). variables.nix is the user-tunable contract.
-  if [ ! -d "$REPO/hosts/$HOST" ]; then
-    echo "==> Custom host '$HOST': creating hosts/$HOST from scratch"
-    mkdir -p "$REPO/hosts/$HOST"
+# Whether to (re)write hosts/$HOST. Two independent questions — does the
+# host dir exist, and did we just clone? Splitting them lets a custom
+# host be created even when the repo was cloned by hand beforehand.
+#   - host dir absent               → create it (custom host: default.nix
+#                                     + variables.nix below)
+#   - host dir present, fresh clone → overwrite the shipped placeholder
+#                                     variables.nix with the user's answers
+#   - host dir present, repo pre-existed → keep the user's variables.nix
+WRITE_VARS=true
+if [ ! -d "$REPO/hosts/$HOST" ]; then
+  echo "==> Custom host '$HOST': creating hosts/$HOST from scratch"
+  # Pure heredoc, no cp+sed. Same shape as the default hosts in the repo
+  # (reads ./variables.nix; hostName from specialArgs). variables.nix is
+  # the user-tunable contract.
+  mkdir -p "$REPO/hosts/$HOST"
 
-    cat > "$REPO/hosts/$HOST/default.nix" <<'NIX'
+  cat > "$REPO/hosts/$HOST/default.nix" <<'NIX'
 { config, lib, pkgs, hostName, ... }:
 # Per-host config. All values come from ./variables.nix; hostName
 # comes from flake.nix specialArgs (= the directory name). Add any
@@ -257,8 +269,13 @@ in
   ];
 }
 NIX
-  fi
+elif [ "$JUST_CLONED" != true ]; then
+  echo "==> hosts/$HOST already present in pre-existing $REPO — keeping your variables.nix."
+  echo "    (To regenerate it from your answers, 'rm -rf $REPO' first.)"
+  WRITE_VARS=false
+fi
 
+if [ "$WRITE_VARS" = true ]; then
   echo "==> Writing $REPO/hosts/$HOST/variables.nix"
   # PRIME bus IDs are only emitted for nvidia-laptop profiles; the
   # profiles that don't use PRIME wouldn't read them anyway.
@@ -315,9 +332,6 @@ $EFI_LINE
   email     = "$EMAIL";
 }
 EOF
-else
-  echo "==> $REPO already exists — skipping clone and variables.nix write."
-  echo "    (To re-apply with new values, 'rm -rf $REPO' first.)"
 fi
 
 echo "==> Copying /etc/nixos/hardware-configuration.nix into the repo"
