@@ -19,7 +19,6 @@
     slurp
     grim
     awww
-    walker
     wlogout
     swaybg
     swayosd
@@ -61,7 +60,6 @@
 
     # ── Theming / tools ──────────────────────────────────────────
     pywal16
-    waypaper
     #whitesur-icon-theme
     whitesur-gtk-theme
     (pkgs.whitesur-icon-theme.override {
@@ -69,7 +67,6 @@
     })
 
     # ── nwg-* (раньше из кастомного void-repo) ───────────────────
-    #nwg-dock-hyprland
     nwg-drawer
     nwg-look
 

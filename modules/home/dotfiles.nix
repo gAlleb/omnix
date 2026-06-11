@@ -33,13 +33,10 @@ let
     "swayosd"
     "suckless"
     "wal"
-    "walker"
     "wallpaper"
     "waybar"
-    "waypaper"
     "wlogout"
     "yazi"
-    "hypr"
   ];
 
   mkSymlinkEntry = name: {
