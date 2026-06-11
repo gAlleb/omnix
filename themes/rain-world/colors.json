@@ -1,0 +1,29 @@
+{
+    "checksum": "1da2798e4228548b99d55f88b515abfd",
+    "wallpaper": "/home/stefan/.config/wallpaper/23.png",
+    "alpha": "100",
+
+    "special": {
+        "background": "#110917",
+        "foreground": "#c3c1c5",
+        "cursor": "#c3c1c5"
+    },
+    "colors": {
+        "color0": "#110917",
+        "color1": "#563246",
+        "color2": "#693143",
+        "color3": "#694B61",
+        "color4": "#893B4A",
+        "color5": "#A05863",
+        "color6": "#D7656D",
+        "color7": "#c3c1c5",
+        "color8": "#64596d",
+        "color9": "#563246",
+        "color10": "#693143",
+        "color11": "#694B61",
+        "color12": "#893B4A",
+        "color13": "#A05863",
+        "color14": "#D7656D",
+        "color15": "#c3c1c5"
+    }
+}
