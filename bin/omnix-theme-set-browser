@@ -23,8 +23,8 @@ if omnix-cmd-present chromium || omnix-cmd-present brave-browser-stable || omnix
   
   if omnix-cmd-present brave-browser-stable || omnix-cmd-present brave; then 
     echo "{\"BrowserThemeColor\": \"$THEME_HEX_COLOR\"}" | tee "/etc/brave/policies/managed/color.json" >/dev/null
-    brave-browser-stable --refresh-platform-policy --no-startup-window
-    brave --refresh-platform-policy --no-startup-window
+    brave-browser-stable --refresh-platform-policy --no-startup-window || true
+    brave --refresh-platform-policy --no-startup-window || true
   fi
   
 fi 
