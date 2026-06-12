@@ -6,7 +6,6 @@ export PATH=$OMNIX_PATH/bin/:$PATH
 set -e  
 
 FIRST_RUN_MODE=~/.local/state/omnix/first-run.mode
-ICON_DIR="$HOME/.local/share/applications/icons"
 
 if [[ -f "$FIRST_RUN_MODE" ]]; then
   rm -f "$FIRST_RUN_MODE"
@@ -20,5 +19,5 @@ if [[ -f "$FIRST_RUN_MODE" ]]; then
   omnix-webapp-install "YouTube" https://youtube.com/ YouTube.png
   omnix-webapp-install "GitHub" https://github.com/ GitHub.png
   omnix-webapp-install "ClaudeAI" https://claude.ai/ ClaudeAI.png
-  omnix-tui-install "Disk Usage" "bash -c 'dust -r; read -n 1 -s'" float "$ICON_DIR/Disk Usage.png"
+  omnix-tui-install "Disk Usage" "bash -c 'dust -r; read -n 1 -s'" float "Disk Usage.png"
 fi
