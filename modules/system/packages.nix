@@ -24,6 +24,7 @@
     jq
     yq-go
     xmlstarlet
+    bat
 
     # editors / shell
     neovim
