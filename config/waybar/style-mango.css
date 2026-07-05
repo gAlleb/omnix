@@ -88,6 +88,13 @@ window#waybar {
 	background-color: transparent;
 }
 
+#custom-mail.unread {
+    color: #ffb86c;
+}
+#custom-mail.empty {
+    color: @fg;
+}
+
 #idle_inhibitor {
   margin-top: 2px;
 }
