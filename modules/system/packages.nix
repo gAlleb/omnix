@@ -33,7 +33,7 @@
     gettext 
     isync 
     goimapnotify 
-    pam-gnupg 
+    gnupg
     lynx 
     notmuch
     urlview 

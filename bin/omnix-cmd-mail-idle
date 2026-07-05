@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# omnix-cmd-mail-idle — разблокировать GPG-ключ pass и поднять
+# goimapnotify@<account> на каждый конфиг, созданный `mw -a`.
+#
+# Зовётся из mango/autostart.conf ПОСЛЕ `systemctl --user import-environment`,
+# чтобы pinentry-qt видел WAYLAND_DISPLAY/DISPLAY и смог всплыть.
+#
+# Аккаунты нигде не захардкожены: источник правды — файлы
+# ~/.config/imapnotify/<account>.json, которые генерит mutt-wizard.
+# Добавил ящик через `mw -a` → на следующем логине он подхватится сам.
+
+store="${PASSWORD_STORE_DIR:-$HOME/.password-store}"
+imap="$HOME/.config/imapnotify"
+
+# 1) Прайминг ключа. Все записи pass зашифрованы одним GPG-ключом, поэтому
+#    расшифровка ЛЮБОЙ одной кладёт пассфразу в кэш gpg-agent и разблокирует
+#    их все. БЕЗ --batch — нам нужно, чтобы pinentry спросил пароль (при
+#    прогретом кэше gpg расшифрует молча, так что скрипт идемпотентен).
+first="$(find "$store" -name '*.gpg' -type f 2>/dev/null | head -n1)"
+[ -n "$first" ] && gpg --decrypt "$first" >/dev/null 2>&1
+
+# 2) На каждый ~/.config/imapnotify/<account>.json — свой инстанс шаблонного
+#    юнита goimapnotify@.service (см. modules/home/mail.nix). '@' в имени
+#    аккаунта systemd режет по первому символу, так что инстанс = s@omfm.ru,
+#    а путь резолвится в .../s@omfm.ru.json — ровно имя файла от mw.
+[ -d "$imap" ] || exit 0
+for f in "$imap"/*.json; do
+    [ -e "$f" ] || continue
+    acct="$(basename "$f" .json)"
+    systemctl --user start "goimapnotify@${acct}.service"
+done

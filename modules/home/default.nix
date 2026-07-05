@@ -11,6 +11,7 @@
     ./xdg.nix
     ./photogimp.nix
     ./mpd.nix
+    ./mail.nix
     ./xresources.nix
     ./mpv.nix
    #./rclone.nix
