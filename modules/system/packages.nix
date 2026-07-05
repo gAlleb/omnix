@@ -39,6 +39,7 @@
     urlview 
     abook 
     w3m
+    mutt-wizard
 
     # editors / shell
     neovim
