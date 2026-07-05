@@ -26,6 +26,20 @@
     xmlstarlet
     bat
 
+    # mail utils
+    neomutt 
+    msmtp 
+    pass 
+    gettext 
+    isync 
+    goimapnotify 
+    pam-gnupg 
+    lynx 
+    notmuch
+    urlview 
+    abook 
+    w3m
+
     # editors / shell
     neovim
     nano

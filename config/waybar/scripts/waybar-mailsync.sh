@@ -21,8 +21,8 @@ done
 [ -z "$tooltip" ] && tooltip="Нет новых писем"
 
 if [ "$total" -gt 0 ]; then
-    printf '{"text":" %d","tooltip":"%s","class":"unread"}\n' "$total" "$tooltip"
+    printf '{"text":" %d","tooltip":"%s","class":"unread"}\n' "$total" "$tooltip"
 else
-    printf '{"text":"","tooltip":"%s","class":"empty"}\n' "$tooltip"
+    printf '{"text":"","tooltip":"%s","class":"empty"}\n' "$tooltip"
 fi
 
