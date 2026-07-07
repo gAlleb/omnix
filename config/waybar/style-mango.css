@@ -89,9 +89,11 @@ window#waybar {
 }
 
 #custom-mail.unread {
+    margin-top: 2px;
     color: #ffb86c;
 }
 #custom-mail.empty {
+    margin-top: 2px;
     color: @fg;
 }
 
