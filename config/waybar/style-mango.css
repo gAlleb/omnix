@@ -88,6 +88,18 @@ window#waybar {
 	background-color: transparent;
 }
 
+#custom-tasks {
+    color: @fg;
+}
+
+#custom-tasks.active {
+    color: #ff5555; /* Выделение цветом, если есть активные задачи */
+}
+
+#custom-tasks.empty {
+    color: #a3be8c; /* Зеленый цвет, если задач нет */
+}
+
 #custom-mail.unread {
     margin-top: 2px;
     color: #ffb86c;
@@ -187,3 +199,4 @@ window#waybar {
   background-color: @color3_70;
   color: @bg;
 }
+
