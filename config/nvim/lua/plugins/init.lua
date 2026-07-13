@@ -4,7 +4,7 @@ return {
 --     lazy = false,
 --  },
   {
-    "Axenide/WallSync",
+    "NvChad/WallSync",
     lazy = false,
     main = "wallsync",
     opts = {},

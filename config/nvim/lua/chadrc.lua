@@ -9,7 +9,7 @@ M.base46 = {
 theme = "chocolate",
 integrations = { 'render-markdown', 'neogit' },
 transparency = true,
-theme_toggle = { "chocolate", "catppuccin" },
+theme_toggle = { "wallsync", "chocolate" },
 	-- hl_override = {
 	-- 	Comment = { italic = true },
 	-- 	["@comment"] = { italic = true },
