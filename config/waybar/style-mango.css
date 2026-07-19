@@ -101,7 +101,7 @@ window#waybar {
 }
 
 #custom-mail.unread {
-    margin-top: 2px;
+    margin-bottom: 0px;
     color: #ffb86c;
 }
 #custom-mail.empty {
