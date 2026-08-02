@@ -12,7 +12,7 @@ radio_stations[Terra @ omFM]="https://stream.omfm.ru:8443/terra"
 radio_stations[Chill @ omFM]="https://stream.omfm.ru:8443/chill"
 radio_stations[Cafe De Paris @ omFM]="https://stream.omfm.ru:8443/cdp"
 radio_stations[Total Rock]="https://s3.citrus3.com:8056/stream"
-
+radio_stations[WSOU 89.5]="https://crystalout.surfernetwork.com:8001/WSOU_MP3"
 
 menu() {
     printf '%s\n' "Quit"
