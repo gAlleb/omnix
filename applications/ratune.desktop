@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=ratune
+Exec=kitty --class=ratune -o font_size=12 --title=ratune -e bash -i -c "ratune"
+Type=Application
+Comment=ratune
+Terminal=false
+Icon=beatbox
+Categories=Music;
+Keywords=music;player;
