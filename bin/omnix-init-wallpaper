@@ -44,7 +44,7 @@ executeCommand() {
     wal -c
 
     # Generate the new color scheme using wal with the determined flag
-    wal ${wal_flags} -i ${selected_wallpaper}
+    wal -i ${selected_wallpaper}
 
     # Update other applications
     omnix-theme-set-browser wal
