@@ -1,0 +1,43 @@
+#!/bin/bash
+
+CONFIG_FILE="$HOME/.config/mango/effects.conf"
+
+# Функция для применения настроек Mango через родную утилиту
+reload_mango() {
+    mmsg dispatch reload_config
+}
+
+if pgrep -x "waybar" > /dev/null; then
+    # --- ПЕРЕКЛЮЧАЕМ НА NOCTALIA ---
+    echo "Switching to Noctalia..."
+
+    # 1. Останавливаем текущие процессы
+    pkill waybar
+    pkill -f omvoid-bar-playerctl-loop
+
+    # 2. Правим конфиг (blur 1 -> 0)
+    sed -i 's/blur_layer=1/blur_layer=0/' "$CONFIG_FILE"
+
+    # 3. Применяем настройки Mango
+    reload_mango
+
+    # 4. Запускаем Noctalia через setsid
+    # >/dev/null 2>&1 нужно, чтобы вывод не забивал терминал/логи
+    setsid noctalia >/dev/null 2>&1 &
+
+else
+    # --- ПЕРЕКЛЮЧАЕМ НА WAYBAR ---
+    echo "Switching to Waybar..."
+
+    # 1. Останавливаем noctalia
+    pkill noctalia
+
+    # 2. Правим конфиг (blur 0 -> 1)
+    sed -i 's/blur_layer=0/blur_layer=1/' "$CONFIG_FILE"
+
+    # 3. Применяем настройки Mango
+    reload_mango
+
+    # 4. Запускаем Waybar с кастомными параметрами через setsid
+    setsid waybar -c ~/.config/waybar/config-mango -s ~/.config/waybar/style-mango.css >/dev/null 2>&1 &
+fi
