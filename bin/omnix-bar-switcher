@@ -1,6 +1,7 @@
 #!/bin/bash
 
-CONFIG_FILE="$HOME/.config/mango/effects.conf"
+CONFIG_FILE_EFFECTS="$HOME/.config/mango/conf/effects.conf"
+CONFIG_FILE_KEYBINDINGS="$HOME/.config/mango/conf/keybindings.conf"
 
 # Функция для применения настроек Mango через родную утилиту
 reload_mango() {
@@ -14,9 +15,13 @@ if pgrep -x "waybar" > /dev/null; then
     # 1. Останавливаем текущие процессы
     pkill waybar
     pkill -f omvoid-bar-playerctl-loop
+    pkill -f layout-switcher-mango
+    pkill mmsg
+    pkill swayidle
 
     # 2. Правим конфиг (blur 1 -> 0)
-    sed -i 's/blur_layer=1/blur_layer=0/' "$CONFIG_FILE"
+    sed -i 's/blur_layer=1/blur_layer=0/' "$CONFIG_FILE_EFFECTS"
+    sed -i 's/bind=ALT,l,spawn,swaylock/bind=ALT,l,spawn,noctalia msg session lock/' "$CONFIG_FILE_KEYBINDINGS"
 
     # 3. Применяем настройки Mango
     reload_mango
@@ -33,11 +38,13 @@ else
     pkill noctalia
 
     # 2. Правим конфиг (blur 0 -> 1)
-    sed -i 's/blur_layer=0/blur_layer=1/' "$CONFIG_FILE"
+    sed -i 's/blur_layer=0/blur_layer=1/' "$CONFIG_FILE_EFFECTS"
+    sed -i 's/bind=ALT,l,spawn,noctalia msg session lock/bind=ALT,l,spawn,swaylock/' "$CONFIG_FILE_KEYBINDINGS"
 
     # 3. Применяем настройки Mango
     reload_mango
 
     # 4. Запускаем Waybar с кастомными параметрами через setsid
     setsid waybar -c ~/.config/waybar/config-mango -s ~/.config/waybar/style-mango.css >/dev/null 2>&1 &
+    setsid swayidle -w >/dev/null 2>&1 & 
 fi
